@@ -54,7 +54,6 @@
         #gameScreen { display: none; width: 100%; justify-content: center; align-items: center; gap: 25px; }
         #chessboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; gap: 8px; }
         
-        /* ── DESAIN BARU PANEL BIDAK MATI YANG PROFESIONAL & KENTARA ── */
         .captured-panel { display: flex; width: 100%; align-items: center; justify-content: flex-start; padding: 8px 14px; min-height: 44px; background-color: #21201d; border: 1px solid #312e2b; border-radius: 6px; box-sizing: border-box; }
         .captured-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
         .dead-piece { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4)); opacity: 0.85; transition: all 0.2s ease; }
@@ -77,6 +76,10 @@
         .square.highlight::after { content: ''; position: absolute; width: 24%; height: 24%; background-color: rgba(0, 0, 0, 0.15); border-radius: 50%; pointer-events: none; }
         .square.highlight.has-piece::after { width: 80%; height: 80%; background: none; border: 5px solid rgba(0, 0, 0, 0.12); border-radius: 50%; }
         
+        /* EFEK VISUAL SKAK (CHECK) UNTUK RAJA */
+        .square.in-check { background: radial-gradient(circle, rgba(255,0,0,0.9) 0%, rgba(230,0,0,0.6) 60%, transparent 100%) !important; animation: checkPulse 1s infinite alternate; }
+        @keyframes checkPulse { 0% { opacity: 0.8; } 100% { opacity: 1; filter: saturate(1.3); } }
+
         .piece { width: 92%; height: 92%; object-fit: contain; z-index: 2; filter: none !important; color-scheme: light !important; }
         
         #chatContainer { width: 320px; height: 630px; background-color: #262522; border-radius: 6px; display: flex; flex-direction: column; border: 1px solid #312e2b; flex-shrink: 0; box-shadow: 0 12px 25px rgba(0,0,0,0.5); }
@@ -94,7 +97,7 @@
         .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background-color: #262522; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #45423e; max-width: 400px; width: 90%; }
         .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #81b64c; }
-        .modal-desc { color: #bababa; margin-bottom: 20px; font-size: 15px; }
+        .modal-desc { color: #bababa; margin-bottom: 20px; font-size: 15px; line-height: 1.4; }
         .modal-btn-group { display: flex; gap: 10px; justify-content: center; }
 
         @media (max-width: 900px) {
@@ -202,14 +205,12 @@
 
         <div id="gameScreen">
             <div id="chessboard-container">
-                <!-- PANEL ATAS: Tempat bidak PUTIH yang dimakan oleh HITAM -->
                 <div class="captured-panel">
                     <div class="captured-box" id="captured-white-box"></div>
                 </div>
 
                 <div id="chessboard" class="theme-blue"></div>
 
-                <!-- PANEL BAWAH: Tempat bidak HITAM yang dimakan oleh PUTIH -->
                 <div class="captured-panel">
                     <div class="captured-box" id="captured-black-box"></div>
                 </div>
@@ -257,7 +258,6 @@
         const soundCapture = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Capture.ogg');
         const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav'); 
 
-        // VARIABEL STATE KALKULASI BIDAK MATI
         const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
         const INITIAL_PIECES = {
             w: ['p','p','p','p','p','p','p','p', 'n','n', 'b','b', 'r','r', 'q'],
@@ -314,7 +314,6 @@
 
         async function initPeerConnection() {
             if (peerConnection) return;
-            
             peerConnection = new RTCPeerConnection(rtcConfig);
             
             peerConnection.onnegotiationneeded = async () => {
@@ -393,6 +392,22 @@
         }
         function confirmLeave() { window.location.reload(); }
 
+        // FUNGSI MENCARI KOORDINAT RAJA YANG SEDANG TERANCAM SKAK
+        function getKingSquare(color) {
+            if (!chess) return null;
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let r = 0; r < 8; r++) {
+                for (let f = 0; f < 8; f++) {
+                    const sq = files[f] + (r + 1);
+                    const piece = chess.get(sq);
+                    if (piece && piece.type === 'k' && piece.color === color) {
+                        return sq;
+                    }
+                }
+            }
+            return null;
+        }
+
         function renderBoard() {
             const boardElement = document.getElementById('chessboard');
             if (!boardElement) return;
@@ -411,6 +426,10 @@
                 }
             }
 
+            // Cek status skak aktif
+            let isCheck = chess ? chess.in_check() : false;
+            let checkTargetSquare = isCheck ? getKingSquare(turn) : null;
+
             const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
             for (let i = 0; i < 8; i++) {
                 const r = myColor === 'b' ? i : 7 - i; 
@@ -427,6 +446,11 @@
                     if (possibleMoves.includes(squareName)) {
                         square.classList.add('highlight');
                         if (chess && chess.get(squareName)) square.classList.add('has-piece');
+                    }
+
+                    // Tambahkan kelas indikator visual jika kotak merupakan Raja yang kena skak
+                    if (squareName === checkTargetSquare) {
+                        square.classList.add('in-check');
                     }
 
                     if (chess) {
@@ -453,12 +477,10 @@
             return map[key] || '';
         }
 
-        // FUNGSI UTAMA UNTUK KALKULASI & RENDER BIDAK MATI SECARA AKURAT
         function checkDeadPieces() {
             if (!chess) return;
 
             let activePieces = { w: [], b: [] };
-
             chess.board().forEach(row => {
                 row.forEach(square => {
                     if (square && square.type !== 'k') {
@@ -489,7 +511,6 @@
             let whiteAdvantage = blackLossScore - whiteLossScore;
             let blackAdvantage = whiteLossScore - blackLossScore;
 
-            // Render ke wadah HTML masing-masing panel
             renderDeadDOM('captured-white-box', 'w', deadWhite, blackAdvantage);
             renderDeadDOM('captured-black-box', 'b', deadBlack, whiteAdvantage);
         }
@@ -514,6 +535,33 @@
             }
         }
 
+        // FUNGSI UTAMA UNTUK CEK KONDISI AKHIR PERMAINAN (MENANG / SKAKMAT / REMIS)
+        function checkGameStatus() {
+            if (!chess) return;
+
+            if (chess.game_over()) {
+                let title = "PERMAINAN SELESAI";
+                let description = "";
+
+                if (chess.in_checkmate()) {
+                    const loserColor = chess.turn();
+                    if (loserColor === myColor) {
+                        title = "🏆 KAMU KALAH!";
+                        description = "Raja Anda terkena Skakmat. Lawan memenangkan pertandingan.";
+                    } else {
+                        title = "🏆 KAMU MENANG!";
+                        description = "Selamat! Anda berhasil melakukan Skakmat kepada Raja lawan.";
+                    }
+                } else if (chess.in_draw() || chess.in_stalemate() || chess.in_threefold_repetition()) {
+                    title = "🤝 HASIL REMIS (DRAW)";
+                    description = "Pertandingan berakhir imbang akibat Remis, Stalemate, atau Pengulangan Tiga Kali Lipat.";
+                }
+
+                openModal(title, description, `<button class="btn" onclick="closeModal()">Lihat Papan</button><button class="btn secondary" onclick="confirmLeave()">Keluar Kamar</button>`);
+                appendMessage({ message: `🏁 Game Selesai: ${title}. ${description}` }, 'system');
+            }
+        }
+
         function handleSquareClick(squareName) {
             if (!chess || chess.turn() !== myColor || chess.game_over() || !gameStarted) return; 
 
@@ -528,6 +576,7 @@
                     selectedSquare = null; possibleMoves = [];
                     renderBoard();
                     checkDeadPieces(); 
+                    checkGameStatus(); // Periksa status kemenangan setelah melangkah
                 }
             } else {
                 const piece = chess.get(squareName);
@@ -608,6 +657,7 @@
                 playGameSound(!!currentPieceAtTarget);
                 renderBoard();
                 checkDeadPieces(); 
+                checkGameStatus(); // Periksa status kemenangan setelah menerima langkah lawan
             }
         });
 
@@ -624,26 +674,20 @@
                 const readyState = peerConnection.signalingState;
                 const collision = (isMakingOffer || readyState !== "stable");
                 
-                if (collision && !isPolite()) {
-                    return;
-                }
+                if (collision && !isPolite()) return;
 
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 socket.emit('webrtc-answer', { room: currentRoom, answer: answer });
-            } catch(e) { 
-                console.error(e); 
-            }
+            } catch(e) { console.error(e); }
         });
 
         socket.on('voice-answer', async (data) => {
             if (peerConnection) {
                 try { 
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer)); 
-                } catch(e) { 
-                    console.error(e); 
-                }
+                } catch(e) { console.error(e); }
             }
         });
 
