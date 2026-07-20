@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: aplikasi-catur
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
