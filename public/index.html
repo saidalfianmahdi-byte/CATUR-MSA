@@ -52,15 +52,16 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #gameScreen { display: none; width: 100%; justify-content: center; align-items: center; gap: 25px; }
-        #chessboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; }
+        #chessboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; gap: 8px; }
         
-        /* DESAIN BARU PANEL BIDAK MATI */
-        .captured-panel { display: flex; width: 100%; align-items: center; justify-content: flex-start; gap: 10px; padding: 6px 4px; min-height: 36px; box-sizing: border-box; }
-        .captured-box { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; }
-        .dead-piece { width: 22px; height: 22px; object-fit: contain; opacity: 0.75; }
-        .score-badge { color: #81b64c; font-size: 11px; font-weight: 800; background: rgba(129,182,76,0.18); padding: 1px 5px; border-radius: 4px; font-family: monospace; margin-left: 4px; }
+        /* ── DESAIN BARU PANEL BIDAK MATI YANG PROFESIONAL & KENTARA ── */
+        .captured-panel { display: flex; width: 100%; align-items: center; justify-content: flex-start; padding: 8px 14px; min-height: 44px; background-color: #21201d; border: 1px solid #312e2b; border-radius: 6px; box-sizing: border-box; }
+        .captured-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .dead-piece { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4)); opacity: 0.85; transition: all 0.2s ease; }
+        .dead-piece:hover { opacity: 1; transform: scale(1.1); }
+        .score-badge { color: #fff; font-size: 12px; font-weight: 800; background: #81b64c; padding: 2px 7px; border-radius: 4px; font-family: sans-serif; margin-left: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
         
-        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; aspect-ratio: 1 / 1; border-radius: 4px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,0.7); }
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.8); border: 2px solid #2b2a27; }
         
         .square { display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; user-select: none; }
         .theme-classic .white-sq { background-color: #eeeed2; }
@@ -78,16 +79,17 @@
         
         .piece { width: 92%; height: 92%; object-fit: contain; z-index: 2; filter: none !important; color-scheme: light !important; }
         
-        #chatContainer { width: 300px; height: 560px; background-color: #262522; border-radius: 6px; display: flex; flex-direction: column; border: 1px solid #312e2b; flex-shrink: 0; }
-        .chat-header { padding: 12px; background-color: #312e2b; border-bottom: 1px solid #3d3a35; font-weight: bold; font-size: 13px; color: #bababa; }
+        #chatContainer { width: 320px; height: 630px; background-color: #262522; border-radius: 6px; display: flex; flex-direction: column; border: 1px solid #312e2b; flex-shrink: 0; box-shadow: 0 12px 25px rgba(0,0,0,0.5); }
+        .chat-header { padding: 14px; background-color: #312e2b; border-bottom: 1px solid #3d3a35; font-weight: bold; font-size: 14px; color: #bababa; }
         #chatMessages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
         .msg { padding: 8px 12px; border-radius: 6px; max-width: 85%; word-break: break-word; }
         .msg.system { background-color: rgba(129,182,76,0.15); color: #81b64c; align-self: center; text-align: center; font-size: 11px; width: 100%; }
         .msg.me { background-color: #81b64c; color: #fff; align-self: flex-end; }
         .msg.opp { background-color: #312e2b; color: #fff; align-self: flex-start; border: 1px solid #45423e; }
-        .chat-input-area { padding: 8px; border-top: 1px solid #312e2b; display: flex; gap: 6px; background-color: #1e1d1b; }
-        .chat-input-area input { flex: 1; padding: 8px 12px; background-color: #262522; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 13px; }
-        .chat-input-area button { padding: 0 14px; background-color: #312e2b; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #312e2b; display: flex; gap: 6px; background-color: #1e1d1b; border-radius: 0 0 6px 6px; }
+        .chat-input-area input { flex: 1; padding: 10px 12px; background-color: #262522; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 13px; }
+        .chat-input-area button { padding: 0 16px; background-color: #81b64c; border: none; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .chat-input-area button:hover { background-color: #95cc5a; }
 
         .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background-color: #262522; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #45423e; max-width: 400px; width: 90%; }
@@ -185,7 +187,7 @@
         <div id="lobbyScreen">
             <div class="lobby-card">
                 <h2 class="lobby-title">MSA CATUR ONLINE</h2>
-                <p class="lobby-subtitle">Voice Chat & realtime</p>
+                <p class="lobby-subtitle">Voice Chat & Realtime</p>
                 <p class="lobby-desc">Ketik Nama Pemain & Nama Kamar di kolom kiri untuk masuk arena bertanding.</p>
             </div>
         </div>
@@ -240,7 +242,6 @@
         let isMicOn = false;
 
         let isMakingOffer = false;
-        let isSettingRemoteAnswerPending = false;
         
         const isPolite = () => myColor === 'b'; 
 
@@ -294,7 +295,6 @@
                 localStream.getAudioTracks().forEach(track => { track.enabled = isMicOn; });
             } catch (err) {
                 console.error("Gagal inisialisasi mic:", err);
-                alert("Gagal terhubung ke mic perangkat. Pastikan izin browser diberikan.");
             }
 
             socket.emit('joinRoom', { username: myUsername, room: currentRoom });
@@ -309,7 +309,6 @@
             
             renderBoard();
             changeTheme();
-            // Reset UI bidak mati di awal masuk
             checkDeadPieces(); 
         }
 
@@ -325,7 +324,7 @@
                     await peerConnection.setLocalDescription(offer);
                     socket.emit('webrtc-offer', { room: currentRoom, offer: offer });
                 } catch (err) {
-                    console.error("Gagal pada penawaran otomatis:", err);
+                    console.error(err);
                 } finally {
                     isMakingOffer = false;
                 }
@@ -342,7 +341,7 @@
                 if (remoteAudio && event.streams && event.streams[0]) {
                     remoteAudio.srcObject = event.streams[0];
                     remoteAudio.muted = !isSpeakerOn; 
-                    remoteAudio.play().catch(e => console.log("Gagal memutar audio:", e));
+                    remoteAudio.play().catch(() => {});
                 }
             };
 
@@ -454,13 +453,12 @@
             return map[key] || '';
         }
 
-        // FUNGSI BARU UNTUK KALKULASI & RENDER BIDAK MATI
+        // FUNGSI UTAMA UNTUK KALKULASI & RENDER BIDAK MATI SECARA AKURAT
         function checkDeadPieces() {
             if (!chess) return;
 
             let activePieces = { w: [], b: [] };
 
-            // Ambil semua data posisi bidak yang tersisa dari engine chess.js
             chess.board().forEach(row => {
                 row.forEach(square => {
                     if (square && square.type !== 'k') {
@@ -469,33 +467,29 @@
                 });
             });
 
-            // Kalkulasi Bidak Putih yang Mati
             let deadWhite = [...INITIAL_PIECES.w];
             activePieces.w.forEach(type => {
                 let idx = deadWhite.indexOf(type);
                 if (idx > -1) deadWhite.splice(idx, 1);
             });
 
-            // Kalkulasi Bidak Hitam yang Mati
             let deadBlack = [...INITIAL_PIECES.b];
             activePieces.b.forEach(type => {
                 let idx = deadBlack.indexOf(type);
                 if (idx > -1) deadBlack.splice(idx, 1);
             });
 
-            // Urutkan susunan gambar dari pion hingga menteri
             const order = ['p', 'n', 'b', 'r', 'q'];
             deadWhite.sort((a,b) => order.indexOf(a) - order.indexOf(b));
             deadBlack.sort((a,b) => order.indexOf(a) - order.indexOf(b));
 
-            // Kalkulasi Keunggulan Skor
             let whiteLossScore = deadWhite.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
             let blackLossScore = deadBlack.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
 
             let whiteAdvantage = blackLossScore - whiteLossScore;
             let blackAdvantage = whiteLossScore - blackLossScore;
 
-            // Render ke wadah HTML
+            // Render ke wadah HTML masing-masing panel
             renderDeadDOM('captured-white-box', 'w', deadWhite, blackAdvantage);
             renderDeadDOM('captured-black-box', 'b', deadBlack, whiteAdvantage);
         }
@@ -533,7 +527,7 @@
                     playGameSound(!!targetPiece);
                     selectedSquare = null; possibleMoves = [];
                     renderBoard();
-                    checkDeadPieces(); // INTEGRASI BARU: Cek sesaat setelah melangkah
+                    checkDeadPieces(); 
                 }
             } else {
                 const piece = chess.get(squareName);
@@ -613,7 +607,7 @@
                 chess.load(data.fen);
                 playGameSound(!!currentPieceAtTarget);
                 renderBoard();
-                checkDeadPieces(); // INTEGRASI BARU: Cek setiap kali menerima data langkah lawan
+                checkDeadPieces(); 
             }
         });
 
@@ -631,7 +625,6 @@
                 const collision = (isMakingOffer || readyState !== "stable");
                 
                 if (collision && !isPolite()) {
-                    console.log("Terjadi tabrakan penawaran audio, perangkat utama mengabaikan offer lawan.");
                     return;
                 }
 
@@ -640,7 +633,7 @@
                 await peerConnection.setLocalDescription(answer);
                 socket.emit('webrtc-answer', { room: currentRoom, answer: answer });
             } catch(e) { 
-                console.error("Gagal saat memproses voice-offer:", e); 
+                console.error(e); 
             }
         });
 
@@ -649,7 +642,7 @@
                 try { 
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer)); 
                 } catch(e) { 
-                    console.error("Gagal saat menyetel remote-answer:", e); 
+                    console.error(e); 
                 }
             }
         });
