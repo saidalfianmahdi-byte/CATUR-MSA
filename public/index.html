@@ -248,9 +248,20 @@
 
         const rtcConfig = { 
             iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
+               // Server STUN tetap dipertahankan untuk koneksi lokal/cepat
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+              // WAJIB: Masukkan Server TURN yang Anda dapatkan dari Xirsys / Metered di bawah ini
+        {
+            urls: 'turn:ALAMAT_TURN_SERVER_ANDA:3478?transport=udp', // Contoh alamat TURN
+            username: 'USERNAME_TURN_ANDA',                         // Masukkan Username dari provider
+            credential: 'PASSWORD_TURN_ANDA'                       // Masukkan Password/Token dari provider
+        },
+        {
+            urls: 'turn:ALAMAT_TURN_SERVER_ANDA:3478?transport=tcp', // Versi TCP sebagai cadangan jika UDP diblokir
+            username: 'USERNAME_TURN_ANDA',
+            credential: 'PASSWORD_TURN_ANDA'
+        }
             ]
         };
 
