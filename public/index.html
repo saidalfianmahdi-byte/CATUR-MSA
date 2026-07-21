@@ -34,23 +34,6 @@
             --board-wood-light: #e3c099;
             --board-wood-dark: #8b5a2b;
         }
-        /* CSS untuk Logo Gambar Custom */
-        .custom-brand-logo {
-           width: 65px;
-           height: 65px;
-           object-fit: contain; /* Menjaga proporsi gambar logo agar tidak terdistorsi */
-           border-radius: 50%;   /* Membuat sudutnya melengkung/lingkaran (opsional) */
-           margin: 0 auto 12px auto;
-           display: block;
-       }
-
-         /* Penyesuaian ukuran logo jika di dalam sidebar agar tidak terlalu besar */
-        .sidebar-panel .custom-brand-logo,
-        .game-sidebar .custom-brand-logo {
-         width: 50px;
-         height: 50px;
-         margin-bottom: 8px;
-         }
 
         * {
             box-sizing: border-box;
@@ -83,6 +66,25 @@
 
         .view-page.active {
             display: flex;
+        }
+
+        /* --- STYLES LOGO CUSTOM (MSA.jpeg) --- */
+        .custom-brand-logo {
+            width: 75px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 0 auto 12px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--border-color);
+        }
+
+        .sidebar-panel .custom-brand-logo,
+        .game-sidebar .custom-brand-logo {
+            width: 55px;
+            height: 55px;
+            margin-bottom: 8px;
         }
 
         /* --- STYLES UMUM BUTTON & INPUT --- */
@@ -151,19 +153,6 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        .brand-logo {
-            width: 70px;
-            height: 70px;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 35px;
-            color: #121214;
-            margin: 0 auto 12px;
-        }
-
         .online-badge {
             display: inline-flex;
             align-items: center;
@@ -203,7 +192,7 @@
             align-items: center;
         }
 
-        /* --- HALAMAN FORM BUAT ROOM (TAMPILAN GAMBAR 1) --- */
+        /* --- HALAMAN FORM BUAT ROOM --- */
         #page-room-form {
             background: #121214;
         }
@@ -233,7 +222,7 @@
             max-width: 420px;
         }
 
-        /* --- HALAMAN ARENA GAME (TAMPILAN GAMBAR 2 NO GAYA PAPAN) --- */
+        /* --- HALAMAN ARENA GAME --- */
         .game-sidebar {
             width: 280px;
             background: var(--bg-sidebar);
@@ -293,7 +282,7 @@
 
         .board-container {
             position: relative;
-            padding: 26px; /* Space untuk Angka & Huruf */
+            padding: 26px;
             background: #1c1e24;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -398,10 +387,10 @@
 
     <div class="app-container">
 
-        <!-- HALAMAN 1: LANDING PAGE LOBBY (DETEKSI DEVICE/PERANGKAT ONLINE) -->
+        <!-- HALAMAN 1: LANDING PAGE LOBBY -->
         <div id="page-lobby" class="view-page active">
             <div class="lobby-card">
-               <!-- Contoh jika file gambar bernama logo.png dan berada di folder yang sama -->
+                <!-- Logo MSA.jpeg -->
                 <img src="MSA.jpeg" alt="MSA CATUR Logo" class="custom-brand-logo">
                 <h1 style="font-size: 24px; font-weight: 800;">MSA CATUR</h1>
                 <div class="online-badge">
@@ -419,7 +408,6 @@
                     <i class="fa-solid fa-server"></i> Room Aktif Saat Ini:
                 </div>
 
-                <!-- Deteksi Room & Pemain Masuk -->
                 <div id="activeRoomsList" class="room-list">
                     <div style="color:var(--text-muted); font-size:12px; padding:12px; background:#16171a; border-radius:8px;">
                         Belum ada room dibuat. Silakan klik tombol di atas!
@@ -428,11 +416,12 @@
             </div>
         </div>
 
-        <!-- HALAMAN SAKLAR (GAMBAR 1): FORM BUAT/JOIN ROOM -->
+        <!-- HALAMAN FORM BUAT/JOIN ROOM -->
         <div id="page-room-form" class="view-page">
             <div class="sidebar-panel">
                 <div style="text-align:center; margin-bottom: 20px;">
-                    <div class="brand-logo" style="width:50px; height:50px; font-size:25px;"><i class="fa-solid fa-chess-knight"></i></div>
+                    <!-- Logo MSA.jpeg -->
+                    <img src="MSA.jpeg" alt="MSA CATUR Logo" class="custom-brand-logo">
                     <h2 style="font-size: 18px; font-weight: 800;">MSA CATUR</h2>
                     <div class="online-badge"><span class="pulse-dot"></span> <span id="onlineCount2">1</span> Online</div>
                 </div>
@@ -472,17 +461,16 @@
             </div>
         </div>
 
-        <!-- HALAMAN 2: ARENA GAME (SESUAI GAMBAR 2, PILIHAN GAYA PAPAN DIHILANGKAN) -->
+        <!-- HALAMAN 2: ARENA GAME -->
         <div id="page-game" class="view-page">
             <div class="game-sidebar">
                 <div>
                     <div style="text-align:center; margin-bottom: 20px;">
-                        <div class="brand-logo" style="width:50px; height:50px; font-size:25px;"><i class="fa-solid fa-chess-knight"></i></div>
+                        <!-- Logo MSA.jpeg -->
+                        <img src="MSA.jpeg" alt="MSA CATUR Logo" class="custom-brand-logo">
                         <h2 style="font-size: 18px; font-weight: 800;">MSA CATUR</h2>
                         <div class="online-badge"><span class="pulse-dot"></span> <span id="onlineCount3">1</span> Online</div>
                     </div>
-
-                    <!-- Pilihan "Gaya Papan" di halaman ini sudah DIHILANGKAN agar bersih -->
 
                     <!-- Audio Controls -->
                     <div class="audio-box">
@@ -564,7 +552,6 @@
             myUsername = usernameInput;
             currentRoom = roomInput;
 
-            // Terapkan Tema Papan Catur yang dipilih dari Halaman Form
             document.getElementById('chessBoard').className = `chess-board ${selectedTheme}`;
 
             socket.emit('joinRoom', { room: currentRoom, username: myUsername });
@@ -585,11 +572,9 @@
             const ranks = isWhite ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
             const files = isWhite ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
 
-            // Render Notasi Angka (1-8) & Huruf (A-H)
             document.getElementById('coordRanks').innerHTML = ranks.map(r => `<div>${r}</div>`).join('');
             document.getElementById('coordFiles').innerHTML = files.map(f => `<div>${f.toUpperCase()}</div>`).join('');
 
-            // Render Petak Catur
             for (let r = 0; r < 8; r++) {
                 for (let f = 0; f < 8; f++) {
                     const squareName = files[f] + ranks[r];
@@ -711,7 +696,6 @@
             }
         });
 
-        // Render papan di awal
         renderBoard();
     </script>
 </body>
