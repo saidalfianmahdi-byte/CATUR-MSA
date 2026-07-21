@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSA CATUR ONLINE</title>
-    <!-- Font & Icons -->
+    <title>MSA CATUR ONLINE - Multi-Room Edition</title>
+    <!-- Font Inter & FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chess.js & Socket.io CDN -->
@@ -53,7 +53,7 @@
             overflow-x: hidden;
         }
 
-        /* --- CONTAINER & PAGES --- */
+        /* --- UI CONTAINER & VIEW MANAGMENT --- */
         .app-container {
             width: 100vw;
             height: 100vh;
@@ -74,7 +74,7 @@
             display: flex;
         }
 
-        /* --- LOBBY (HALAMAN 1) --- */
+        /* --- HALAMAN 1: LOBBY UTAMA --- */
         #page-lobby {
             flex-direction: column;
             align-items: center;
@@ -88,7 +88,7 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
             padding: 32px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             text-align: center;
@@ -102,20 +102,21 @@
         }
 
         .brand-icon {
-            width: 65px;
-            height: 65px;
+            width: 70px;
+            height: 70px;
             background: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 36px;
             color: var(--bg-dark);
             margin-bottom: 12px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .brand-title {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: 1px;
         }
@@ -141,13 +142,19 @@
             box-shadow: 0 0 8px var(--accent-green);
         }
 
+        .lobby-actions {
+            display: flex;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
         .btn {
             background-color: var(--accent-green);
             color: #fff;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -155,39 +162,91 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%;
+            flex: 1;
         }
 
         .btn:hover {
             background-color: var(--accent-green-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
-        .btn-secondary { background-color: #2c2f38; color: var(--text-main); }
-        .btn-secondary:hover { background-color: #383c47; }
-        .btn-danger { background-color: var(--accent-red); }
-        .btn-danger:hover { background-color: #c0392b; }
+        .btn-secondary {
+            background-color: #2c2f38;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background-color: #383c47;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* Room List Section */
+        .room-section-title {
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
         .room-list {
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-top: 15px;
+            margin-bottom: 10px;
         }
 
         .room-item {
             background: #16171a;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: border 0.2s;
         }
 
-        /* --- FORM BUAT ROOM --- */
+        .room-item:hover {
+            border-color: var(--accent-green);
+        }
+
+        .room-info {
+            text-align: left;
+        }
+
+        .room-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .room-players {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .empty-rooms {
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 20px;
+            background: #16171a;
+            border-radius: 10px;
+            border: 1px dashed var(--border-color);
+        }
+
+        /* --- HALAMAN FORM CREATE / JOIN ROOM --- */
         #page-room-form {
             background: radial-gradient(circle at center, #1e2026 0%, #121214 100%);
         }
@@ -199,14 +258,14 @@
             padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 20px;
             z-index: 2;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             text-align: left;
         }
 
@@ -220,13 +279,16 @@
             background: #252830;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 10px 12px;
+            padding: 12px;
             color: var(--text-main);
             font-size: 14px;
             outline: none;
+            transition: border-color 0.2s;
         }
 
-        .form-control:focus { border-color: var(--accent-green); }
+        .form-control:focus {
+            border-color: var(--accent-green);
+        }
 
         .center-hero {
             flex: 1;
@@ -243,9 +305,10 @@
             padding: 40px;
             max-width: 450px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* --- ARENA GAME (HALAMAN 2) --- */
+        /* --- HALAMAN 2: ARENA GAME --- */
         #page-game {
             display: flex;
             width: 100%;
@@ -253,30 +316,22 @@
         }
 
         .game-sidebar {
-            width: 280px;
+            width: 300px;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            /* Memisahkan konten atas dan tombol keluar di bawah */
-            justify-content: space-between; 
-            height: 100vh;
-        }
-
-        .sidebar-top-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            justify-content: space-between;
         }
 
         .audio-controls {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             background: #23252b;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 14px;
+            border-radius: 10px;
         }
 
         .audio-btn {
@@ -284,13 +339,13 @@
             justify-content: space-between;
             align-items: center;
             background: #18191c;
-            padding: 8px 10px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 13px;
         }
 
         .toggle-badge {
-            padding: 4px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 700;
@@ -303,7 +358,8 @@
         .player-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .player-card {
@@ -314,22 +370,24 @@
             align-items: center;
             gap: 10px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 14px;
         }
 
-        /* BOARD & COORDINATES */
+        /* ARENA BOARD CONTAINER & COORDINATES */
         .game-arena {
             flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: #141518;
             padding: 20px;
+            position: relative;
         }
 
         .board-wrapper {
             position: relative;
-            padding: 28px;
+            padding: 25px;
             background: #1a1c23;
             border-radius: 12px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.6);
@@ -337,41 +395,49 @@
 
         .chess-board {
             display: grid;
-            grid-template-columns: repeat(8, 60px);
-            grid-template-rows: repeat(8, 60px);
+            grid-template-columns: repeat(8, 65px);
+            grid-template-rows: repeat(8, 65px);
             border: 2px solid #2f323a;
+            position: relative;
         }
 
         .square {
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 42px;
+            font-size: 45px;
             cursor: pointer;
+            position: relative;
         }
 
-        .square.selected { background-color: rgba(241, 196, 15, 0.6) !important; }
-        .square.highlight { position: relative; }
+        .square.selected {
+            background-color: rgba(241, 196, 15, 0.6) !important;
+        }
+
+        .square.highlight {
+            position: relative;
+        }
+
         .square.highlight::after {
             content: '';
-            width: 16px;
-            height: 16px;
-            background: rgba(0, 0, 0, 0.25);
+            width: 18px;
+            height: 18px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 50%;
             position: absolute;
         }
 
-        /* Coordinates */
+        /* Coordinates Styling */
         .coord-rank {
             position: absolute;
             left: 8px;
-            top: 28px;
-            height: 480px;
             display: flex;
             flex-direction: column;
             justify-content: space-around;
+            height: calc(100% - 50px);
+            top: 25px;
             font-size: 12px;
             font-weight: 700;
             color: var(--text-muted);
@@ -380,16 +446,16 @@
         .coord-file {
             position: absolute;
             bottom: 6px;
-            left: 28px;
-            width: 480px;
             display: flex;
             justify-content: space-around;
+            width: calc(100% - 50px);
+            left: 25px;
             font-size: 12px;
             font-weight: 700;
             color: var(--text-muted);
         }
 
-        /* Theme Color Mapping */
+        /* Themes Variable Mapping */
         .theme-ocean .light { background-color: var(--board-ocean-light); }
         .theme-ocean .dark { background-color: var(--board-ocean-dark); }
         .theme-emerald .light { background-color: var(--board-emerald-light); }
@@ -401,7 +467,7 @@
 
         /* CHAT SIDEBAR */
         .chat-sidebar {
-            width: 300px;
+            width: 320px;
             background: var(--bg-sidebar);
             border-left: 1px solid var(--border-color);
             display: flex;
@@ -412,7 +478,7 @@
             padding: 16px;
             border-bottom: 1px solid var(--border-color);
             font-weight: 700;
-            font-size: 14px;
+            font-size: 15px;
         }
 
         .chat-messages {
@@ -425,15 +491,24 @@
         }
 
         .msg {
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             font-size: 13px;
             max-width: 85%;
             word-break: break-word;
         }
 
-        .msg.me { background: var(--accent-green); align-self: flex-end; color: #fff; }
-        .msg.opp { background: #2c2f38; align-self: flex-start; }
+        .msg.me {
+            background: var(--accent-green);
+            align-self: flex-end;
+            color: #fff;
+        }
+
+        .msg.opp {
+            background: #2c2f38;
+            align-self: flex-start;
+        }
+
         .msg.system {
             background: rgba(52, 152, 219, 0.15);
             color: var(--accent-blue);
@@ -444,10 +519,31 @@
         }
 
         .chat-input-area {
-            padding: 14px;
+            padding: 16px;
             border-top: 1px solid var(--border-color);
             display: flex;
             gap: 8px;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
     </style>
 </head>
@@ -455,11 +551,11 @@
 
     <div class="app-container">
 
-        <!-- HALAMAN 1: LOBBY -->
+        <!-- ==================== HALAMAN 1: LOBBY UTAMA ==================== -->
         <div id="page-lobby" class="view-page active">
             <div class="lobby-card">
                 <div class="brand-header">
-                    <div class="brand-icon"><i class="fa-solid fa-chess-knight"></i></div>
+                    <div class="brand-icon"><i class="fa-solid => fa-chess-knight"></i></div>
                     <h1 class="brand-title">MSA CATUR ONLINE</h1>
                     <div class="online-badge">
                         <span class="pulse-dot"></span>
@@ -467,26 +563,27 @@
                     </div>
                 </div>
 
-                <button class="btn" onclick="switchPage('page-room-form')" style="margin-bottom: 20px;">
-                    <i class="fa-solid fa-plus"></i> Buat / Masuk Room
-                </button>
+                <div class="lobby-actions">
+                    <button class="btn" onclick="switchPage('page-room-form')">
+                        <i class="fa-solid fa-plus"></i> Buat Room Baru
+                    </button>
+                </div>
 
-                <div style="text-align: left; font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-                    <i class="fa-solid fa-list"></i> Room Aktif Saat Ini:
+                <div class="room-section-title">
+                    <span><i class="fa-solid fa-list"></i> Room Aktif Saat Ini</span>
+                    <span id="roomCountText">0 Room</span>
                 </div>
 
                 <div id="activeRoomsList" class="room-list">
-                    <div style="color:var(--text-muted); font-size:13px; padding:15px; background:#16171a; border-radius:8px;">
-                        Belum ada room aktif. Buat room pertama Anda!
-                    </div>
+                    <div class="empty-rooms">Belum ada room aktif. Buat room pertama Anda!</div>
                 </div>
             </div>
         </div>
 
-        <!-- HALAMAN FORM: INPUT DETAIL -->
+        <!-- ==================== HALAMAN FORM: BUAT / JOIN ROOM ==================== -->
         <div id="page-room-form" class="view-page">
             <div class="sidebar-panel">
-                <div class="brand-header" style="align-items:flex-start;">
+                <div class="brand-header" style="margin-bottom:0; text-align:left; align-items:flex-start;">
                     <h2 class="brand-title" style="font-size:20px;">MSA CATUR</h2>
                     <div class="online-badge"><span class="pulse-dot"></span> <span id="onlineCount2">1</span> Online</div>
                 </div>
@@ -494,17 +591,17 @@
                 <hr style="border-color: var(--border-color);">
 
                 <div class="form-group">
-                    <label>Nama Pemain</label>
+                    <label for="inputUsername">Nama Pemain</label>
                     <input type="text" id="inputUsername" class="form-control" placeholder="Nama Anda..." maxlength="15">
                 </div>
 
                 <div class="form-group">
-                    <label>Nama Kamar (Room)</label>
+                    <label for="inputRoomName">Nama Kamar (Room)</label>
                     <input type="text" id="inputRoomName" class="form-control" placeholder="Nama Room..." maxlength="15">
                 </div>
 
                 <div class="form-group">
-                    <label>Gaya Papan Catur</label>
+                    <label for="selectBoardTheme">Gaya Papan Catur</label>
                     <select id="selectBoardTheme" class="form-control">
                         <option value="theme-ocean">Ocean Blue</option>
                         <option value="theme-emerald">Emerald Green</option>
@@ -522,21 +619,22 @@
                     <h2 style="margin-bottom: 10px;">MSA CATUR ONLINE</h2>
                     <p style="color: var(--accent-green); font-weight:700; font-size:13px; margin-bottom: 15px;">VOICE CHAT & REALTIME</p>
                     <p style="color: var(--text-muted); font-size:14px; line-height: 1.6;">
-                        Ketik Nama Pemain & Nama Kamar di kolom kiri untuk masuk arena bertanding.
+                        Ketik Nama Pemain & Nama Kamar di kolom kiri, pilih gaya papan favorit Anda, lalu masuk ke arena bertanding!
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- HALAMAN 2: ARENA GAME -->
+        <!-- ==================== HALAMAN 2: ARENA GAME ==================== -->
         <div id="page-game" class="view-page">
             <div class="game-sidebar">
-                <!-- Konten Atas Sidebar -->
-                <div class="sidebar-top-content">
-                    <div class="brand-header" style="align-items:flex-start;">
+                <div>
+                    <div class="brand-header" style="align-items:flex-start; margin-bottom:15px;">
                         <h2 class="brand-title" style="font-size:20px;">MSA CATUR</h2>
                         <div class="online-badge"><span class="pulse-dot"></span> Online</div>
                     </div>
+
+                    <!-- Pilihan Gaya Papan TELAH DIHAPUS dari halaman ini sesuai permintaan -->
 
                     <div class="audio-controls">
                         <div class="audio-btn">
@@ -559,17 +657,19 @@
                     </div>
                 </div>
 
-                <!-- Tombol Keluar Tetap di Bawah Ukuran Normal -->
-                <button class="btn btn-danger" onclick="location.reload()">
-                    <i class="fa-solid fa-door-open"></i> Keluar Game
-                </button>
+                <button class="btn btn-danger" onclick="leaveGame()"><i class="fa-solid fa-door-open"></i> Keluar Game</button>
             </div>
 
             <!-- Arena Utama Papan Catur -->
             <div class="game-arena">
                 <div class="board-wrapper">
+                    <!-- Numbers 1-8 -->
                     <div class="coord-rank" id="coordRanks"></div>
+                    
+                    <!-- Board Grid -->
                     <div class="chess-board" id="chessBoard"></div>
+
+                    <!-- Letters A-H -->
                     <div class="coord-file" id="coordFiles"></div>
                 </div>
             </div>
@@ -580,26 +680,37 @@
                 <div class="chat-messages" id="chatMessages"></div>
                 <div class="chat-input-area">
                     <input type="text" id="btn-input" class="form-control" placeholder="Ketik pesan..." onkeydown="if(event.key==='Enter') sendMessage()">
-                    <button class="btn" style="width: auto; padding: 10px 14px;" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                    <button class="btn" style="flex:0;" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- AUDIO SOUNDS -->
+    <!-- MODAL POPUP SYSTEM -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+            <h3 id="modalTitle" style="margin-bottom:10px;">Informasi</h3>
+            <p id="modalBody" style="color:var(--text-muted); font-size:14px; margin-bottom:20px;"></p>
+            <div id="modalActions"></div>
+        </div>
+    </div>
+
+    <!-- AUDIO SOUND EFFECTS -->
     <audio id="soundMove" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/move-self.mp3"></audio>
     <audio id="soundCapture" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/capture.mp3"></audio>
     <audio id="soundStart" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/game-start.mp3"></audio>
 
     <script>
+        // --- CHESS PIECE SYMBOLS ---
         const PIECE_SYMBOLS = {
-            'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚',
+            'p': '♟', 'r': '♜', 'n': '➞', 'b': '♝', 'q': '♛', 'k': '♚',
             'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
         };
 
+        // --- GLOBAL VARIABLES ---
         const socket = io();
-        let chess = new Chess(); // Inisialisasi awal agar papan langsung tampil
+        let chess = null;
         let myColor = 'w';
         let myUsername = '';
         let currentRoom = '';
@@ -607,35 +718,42 @@
         let possibleMoves = [];
         let activeTheme = 'theme-ocean';
 
+        // WebRTC & Audio State
+        let localStream = null;
+        let peerConnection = null;
         let isMicOn = false;
         let isSpeakerOn = true;
 
+        const soundMove = document.getElementById('soundMove');
+        const soundCapture = document.getElementById('soundCapture');
+        const soundStart = document.getElementById('soundStart');
+
+        // --- NAVIGASI HALAMAN ---
         function switchPage(pageId) {
             document.querySelectorAll('.view-page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
         }
 
+        // --- FORM ACTION ---
         function handleJoinOrCreate(roomToJoin = null) {
             const usernameInput = document.getElementById('inputUsername').value.trim();
             const roomInput = roomToJoin || document.getElementById('inputRoomName').value.trim();
             activeTheme = document.getElementById('selectBoardTheme').value;
 
             if (!usernameInput || !roomInput) {
-                alert("Silakan isi Nama Anda dan Nama Room!");
+                openModal("Peringatan", "Silakan isi Nama Anda dan Nama Room!");
                 return;
             }
 
             myUsername = usernameInput;
             currentRoom = roomInput;
 
+            // Terapkan Tema Papan yang Dipilih
             const boardElem = document.getElementById('chessBoard');
             boardElem.className = `chess-board ${activeTheme}`;
 
             socket.emit('joinRoom', { room: currentRoom, username: myUsername });
             switchPage('page-game');
-            
-            // Render awal papan catur
-            renderBoard();
         }
 
         function fillAndJoin(roomName) {
@@ -643,6 +761,7 @@
             switchPage('page-room-form');
         }
 
+        // --- BOARD & COORDINATES RENDERER ---
         function renderBoard() {
             const boardElem = document.getElementById('chessBoard');
             boardElem.innerHTML = '';
@@ -651,11 +770,10 @@
             const ranks = isWhite ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
             const files = isWhite ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
 
-            // Render Koordinat
-            document.getElementById('coordRanks').innerHTML = ranks.map(r => `<div>${r}</div>`).join('');
-            document.getElementById('coordFiles').innerHTML = files.map(f => `<div>${f.toUpperCase()}</div>`).join('');
+            // Render Koordinat (Angka & Huruf)
+            renderCoordinates(ranks, files);
 
-            // Render Petak Catur
+            // Render Petak
             for (let r = 0; r < 8; r++) {
                 for (let f = 0; f < 8; f++) {
                     const squareName = files[f] + ranks[r];
@@ -663,6 +781,7 @@
                     
                     const isLight = (r + f) % 2 === 0;
                     squareDiv.className = `square ${isLight ? 'light' : 'dark'}`;
+                    squareDiv.dataset.square = squareName;
 
                     if (selectedSquare === squareName) squareDiv.classList.add('selected');
                     if (possibleMoves.includes(squareName)) squareDiv.classList.add('highlight');
@@ -679,6 +798,15 @@
             }
         }
 
+        function renderCoordinates(ranks, files) {
+            const rankElem = document.getElementById('coordRanks');
+            const fileElem = document.getElementById('coordFiles');
+
+            rankElem.innerHTML = ranks.map(r => `<div>${r}</div>`).join('');
+            fileElem.innerHTML = files.map(f => `<div>${f.toUpperCase()}</div>`).join('');
+        }
+
+        // --- GAME LOGIC ---
         function handleSquareClick(squareName) {
             if (!chess || chess.turn() !== myColor) return;
 
@@ -687,6 +815,7 @@
                     const move = chess.move({ from: selectedSquare, to: squareName, promotion: 'q' });
                     if (move) {
                         socket.emit('makeMove', { room: currentRoom, move: move });
+                        playGameSound(move.captured);
                         selectedSquare = null;
                         possibleMoves = [];
                         renderBoard();
@@ -707,6 +836,18 @@
             renderBoard();
         }
 
+        function playGameSound(isCapture) {
+            if (!isSpeakerOn) return;
+            try {
+                if (isCapture) {
+                    soundCapture.currentTime = 0; soundCapture.play().catch(()=>{});
+                } else {
+                    soundMove.currentTime = 0; soundMove.play().catch(()=>{});
+                }
+            } catch(e) {}
+        }
+
+        // --- CHAT SYSTEM ---
         function sendMessage() {
             const input = document.getElementById('btn-input');
             const msg = input.value.trim();
@@ -727,11 +868,15 @@
             box.scrollTop = box.scrollHeight;
         }
 
+        // --- AUDIO / VOICE CONTROLS ---
         function toggleMic() {
             isMicOn = !isMicOn;
             const btn = document.getElementById('btnMic');
             btn.className = `toggle-badge ${isMicOn ? 'toggle-on' : 'toggle-off'}`;
             btn.innerText = isMicOn ? 'ON' : 'OFF';
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => track.enabled = isMicOn);
+            }
         }
 
         function toggleSpeaker() {
@@ -741,7 +886,31 @@
             btn.innerText = isSpeakerOn ? 'ON' : 'OFF';
         }
 
-        // --- SOCKET HANDLERS ---
+        function leaveGame() {
+            openModal("Keluar Game", "Apakah Anda yakin ingin keluar ke Lobby?", 
+                `<button class="btn btn-danger" onclick="confirmLeave()">Ya, Keluar</button>
+                 <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:8px;">Batal</button>`
+            );
+        }
+
+        function confirmLeave() {
+            location.reload();
+        }
+
+        function openModal(title, body, actionsHtml = '') {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = body;
+            document.getElementById('modalActions').innerHTML = actionsHtml || `<button class="btn" onclick="closeModal()">Tutup</button>`;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        // --- SOCKET.IO EVENT HANDLERS ---
+
+        // Realtime Online Count & Room Detection
         socket.on('updateOnlineCount', (count) => {
             document.getElementById('onlineCount').innerText = count;
             document.getElementById('onlineCount2').innerText = count;
@@ -749,18 +918,20 @@
 
         socket.on('updateRoomList', (rooms) => {
             const listElem = document.getElementById('activeRoomsList');
-            if (!rooms || rooms.length === 0) {
-                listElem.innerHTML = `<div style="color:var(--text-muted); font-size:13px; padding:15px; background:#16171a; border-radius:8px;">Belum ada room aktif. Buat room pertama Anda!</div>`;
+            document.getElementById('roomCountText').innerText = `${rooms.length} Room`;
+            
+            if (rooms.length === 0) {
+                listElem.innerHTML = `<div class="empty-rooms">Belum ada room aktif. Buat room pertama Anda!</div>`;
                 return;
             }
 
             listElem.innerHTML = rooms.map(r => `
                 <div class="room-item">
-                    <div style="text-align:left;">
-                        <div style="font-weight:700; font-size:14px;"><i class="fa-solid fa-door-open" style="color:var(--accent-green)"></i> ${r.name}</div>
-                        <div style="font-size:12px; color:var(--text-muted);">${r.playerCount}/2 Pemain</div>
+                    <div class="room-info">
+                        <div class="room-name"><i class="fa-solid fa-door-open" style="color:var(--accent-green)"></i> ${r.name}</div>
+                        <div class="room-players">${r.playerCount}/2 Pemain</div>
                     </div>
-                    <button class="btn btn-secondary" style="width:auto; padding:6px 12px; font-size:12px;" 
+                    <button class="btn btn-secondary" style="flex:0; padding:8px 14px; font-size:12px;" 
                         ${r.playerCount >= 2 ? 'disabled style="opacity:0.5"' : `onclick="fillAndJoin('${r.name}')"`}>
                         ${r.playerCount >= 2 ? 'Penuh' : 'Join'}
                     </button>
@@ -777,13 +948,15 @@
             document.getElementById('myNameDisplay').innerHTML = `<i class="fa-solid fa-user"></i> ${myUsername} (${myColor === 'w' ? 'Putih' : 'Hitam'})`;
 
             renderBoard();
-            document.getElementById('soundStart').play().catch(()=>{});
+            soundStart.play().catch(()=>{});
             appendMessage({ message: `🎮 Game dimulai! Anda bermain sebagai ${myColor === 'w' ? 'Putih' : 'Hitam'}.` }, 'system');
         });
 
         socket.on('moveMade', (data) => {
             if (chess) {
+                const captured = chess.get(data.move.to);
                 chess.move(data.move);
+                playGameSound(captured);
                 renderBoard();
             }
         });
@@ -796,6 +969,7 @@
 
         socket.on('playerLeft', () => {
             appendMessage({ message: '⚠️ Lawan meninggalkan permainan.' }, 'system');
+            openModal("Lawan Keluar", "Pemain lawan telah keluar dari room.", `<button class="btn" onclick="confirmLeave()">Kembali ke Lobby</button>`);
         });
     </script>
 </body>
