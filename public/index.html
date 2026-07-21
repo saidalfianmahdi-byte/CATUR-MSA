@@ -3,973 +3,1417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MSA CATUR ONLINE - Multi-Room Edition</title>
-    <!-- Font Inter & FontAwesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chess.js & Socket.io CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <title>MSA CHESS ONLINE</title>
     <script src="/socket.io/socket.io.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <style>
-        :root {
-            --bg-dark: #121214;
-            --bg-card: #1e1f23;
-            --bg-sidebar: #18191c;
-            --accent-green: #70a83b;
-            --accent-green-hover: #83c347;
-            --accent-red: #e74c3c;
-            --accent-blue: #3498db;
-            --text-main: #f1f2f6;
-            --text-muted: #95a5a6;
-            --border-color: #2f323a;
-            
-            /* Board Themes */
-            --board-ocean-light: #e0e8f0;
-            --board-ocean-dark: #4682b4;
-            --board-emerald-light: #e8f5e9;
-            --board-emerald-dark: #2e7d32;
-            --board-classic-light: #f0d9b5;
-            --board-classic-dark: #b58863;
-            --board-wood-light: #e3c099;
-            --board-wood-dark: #8b5a2b;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #161512; color: #fff; overflow: hidden; flex-direction: row; }
+        
+        #sidebar { width: 320px; background-color: #262522; display: flex; flex-direction: column; padding: 20px; border-right: 1px solid #312e2b; justify-content: space-between; z-index: 5; flex-shrink: 0; }
+        .sidebar-logo-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #312e2b; }
+        .sidebar-logo-wrapper { width: 80px; height: 80px; background-color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        .sidebar-logo-img { width: 100%; height: 100%; object-fit: contain; }
+        .sidebar-logo-area h1 { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        
+        .online-counter { font-size: 11px; color: #81b64c; background-color: rgba(129,182,76,0.1); padding: 4px 10px; border-radius: 20px; margin-top: 5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+        .online-dot { width: 6px; height: 6px; background-color: #81b64c; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            user-select: none;
-        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #bababa; font-size: 13px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background-color: #312e2b; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 15px; }
+        
+        .btn { width: 100%; padding: 12px; background-color: #81b64c; border: none; border-radius: 4px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 0 #67923d; }
+        .btn:hover { background-color: #95cc5a; }
+        .btn.danger { width: 100%; padding: 12px; background-color: #f44336; border: none; border-radius: 4px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b71c1c; }
+        .btn.danger:hover { background-color: #e57373; }
+        .btn.secondary { background-color: #45423e; box-shadow: 0 4px 0 #312e2b; margin-top: 10px;}
+        
+        .media-controls { background: #312e2b; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #45423e;}
+        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600;}
+        .toggle-btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; color: #fff; min-width: 60px; text-align: center;}
+        .toggle-btn.on { background-color: #81b64c; }
+        .toggle-btn.off { background-color: #f44336; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
-        }
+        .player-card { background-color: #312e2b; padding: 12px 15px; border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #45423e; font-weight: 600; font-size: 14px; }
+        .player-card.active { border-left-color: #81b64c; background-color: #3a3733; }
+        
+        #mainContent { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; background-color: #161512; overflow-y: auto; }
+        #lobbyScreen { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, #22211e 0%, #161512 100%); z-index: 10; text-align: center; padding: 30px; }
+        .lobby-card { background-color: #262522; padding: 40px 30px; border-radius: 12px; border: 1px solid #312e2b; box-shadow: 0 20px 40px rgba(0,0,0,0.6); max-width: 440px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .lobby-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 8px; }
+        .lobby-subtitle { font-size: 13px; color: #81b64c; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+        .lobby-desc { color: #bababa; font-weight: 400; font-size: 14px; line-height: 1.5; border-top: 1px solid #312e2b; padding-top: 15px; }
 
-        /* --- UI CONTAINER & VIEW MANAGMENT --- */
-        .app-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            position: relative;
-        }
+        #waitingScreen { display: none; position: absolute; width: 100%; height: 100%; background: #161512; z-index: 9; flex-direction: column; justify-content: center; align-items: center; }
+        .waiting-box { background: #262522; padding: 40px; border-radius: 12px; border: 1px solid #312e2b; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 400px; width: 90%; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #312e2b; border-top: 5px solid #81b64c; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .view-page {
-            display: none;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+        #gameScreen { display: none; width: 100%; justify-content: center; align-items: center; gap: 25px; }
+        #chessboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; gap: 8px; }
+        
+        .captured-panel { display: flex; width: 100%; align-items: center; justify-content: flex-start; padding: 8px 14px; min-height: 44px; background-color: #21201d; border: 1px solid #312e2b; border-radius: 6px; box-sizing: border-box; }
+        .captured-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .dead-piece { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4)); opacity: 0.85; transition: all 0.2s ease; }
+        .dead-piece:hover { opacity: 1; transform: scale(1.1); }
+        .score-badge { color: #fff; font-size: 12px; font-weight: 800; background: #81b64c; padding: 2px 7px; border-radius: 4px; font-family: sans-serif; margin-left: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.8); border: 2px solid #2b2a27; }
+        
+        .square { display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; user-select: none; }
+        .theme-classic .white-sq { background-color: #eeeed2; }
+        .theme-classic .black-sq { background-color: #769656; }
+        .theme-blue .white-sq { background-color: #ebecf0; }
+        .theme-blue .black-sq { background-color: #4b7399; }
+        .theme-wood .white-sq { background-color: #dcb35c; }
+        .theme-wood .black-sq { background-color: #8d5b4c; }
+        .theme-charcoal .white-sq { background-color: #e3e3e3; }
+        .theme-charcoal .black-sq { background-color: #707070; }
+        
+        .square.selected { background-color: rgba(247, 247, 105, 0.4) !important; }
+        .square.highlight::after { content: ''; position: absolute; width: 24%; height: 24%; background-color: rgba(0, 0, 0, 0.15); border-radius: 50%; pointer-events: none; }
+        .square.highlight.has-piece::after { width: 80%; height: 80%; background: none; border: 5px solid rgba(0, 0, 0, 0.12); border-radius: 50%; }
+        
+        /* EFEK VISUAL SKAK (CHECK) UNTUK RAJA */
+        .square.in-check { background: radial-gradient(circle, rgba(255,0,0,0.9) 0%, rgba(230,0,0,0.6) 60%, transparent 100%) !important; animation: checkPulse 1s infinite alternate; }
+        @keyframes checkPulse { 0% { opacity: 0.8; } 100% { opacity: 1; filter: saturate(1.3); } }
 
-        .view-page.active {
-            display: flex;
-        }
+        .piece { width: 92%; height: 92%; object-fit: contain; z-index: 2; filter: none !important; color-scheme: light !important; }
+        
+        #chatContainer { width: 320px; height: 630px; background-color: #262522; border-radius: 6px; display: flex; flex-direction: column; border: 1px solid #312e2b; flex-shrink: 0; box-shadow: 0 12px 25px rgba(0,0,0,0.5); }
+        .chat-header { padding: 14px; background-color: #312e2b; border-bottom: 1px solid #3d3a35; font-weight: bold; font-size: 14px; color: #bababa; }
+        #chatMessages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+        .msg { padding: 8px 12px; border-radius: 6px; max-width: 85%; word-break: break-word; }
+        .msg.system { background-color: rgba(129,182,76,0.15); color: #81b64c; align-self: center; text-align: center; font-size: 11px; width: 100%; }
+        .msg.me { background-color: #81b64c; color: #fff; align-self: flex-end; }
+        .msg.opp { background-color: #312e2b; color: #fff; align-self: flex-start; border: 1px solid #45423e; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #312e2b; display: flex; gap: 6px; background-color: #1e1d1b; border-radius: 0 0 6px 6px; }
+        .chat-input-area input { flex: 1; padding: 10px 12px; background-color: #262522; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 13px; }
+        .chat-input-area button { padding: 0 16px; background-color: #81b64c; border: none; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .chat-input-area button:hover { background-color: #95cc5a; }
 
-        /* --- HALAMAN 1: LOBBY UTAMA --- */
-        #page-lobby {
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: radial-gradient(circle at center, #1e2026 0%, #121214 100%);
-        }
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background-color: #262522; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #45423e; max-width: 400px; width: 90%; }
+        .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #81b64c; }
+        .modal-desc { color: #bababa; margin-bottom: 20px; font-size: 15px; line-height: 1.4; }
+        .modal-btn-group { display: flex; gap: 10px; justify-content: center; }
 
-        .lobby-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 650px;
-            padding: 32px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .brand-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .brand-icon {
-            width: 70px;
-            height: 70px;
-            background: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: var(--bg-dark);
-            margin-bottom: 12px;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-        }
-
-        .brand-title {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        .online-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(112, 168, 59, 0.15);
-            color: var(--accent-green);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--accent-green);
-        }
-
-        .lobby-actions {
-            display: flex;
-            gap: 16px;
-            margin: 24px 0;
-        }
-
-        .btn {
-            background-color: var(--accent-green);
-            color: #fff;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-green-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: #2c2f38;
-            color: var(--text-main);
-        }
-
-        .btn-secondary:hover {
-            background-color: #383c47;
-        }
-
-        .btn-danger {
-            background-color: var(--accent-red);
-        }
-
-        .btn-danger:hover {
-            background-color: #c0392b;
-        }
-
-        /* Room List Section */
-        .room-section-title {
-            text-align: left;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .room-list {
-            max-height: 220px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .room-item {
-            background: #16171a;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: border 0.2s;
-        }
-
-        .room-item:hover {
-            border-color: var(--accent-green);
-        }
-
-        .room-info {
-            text-align: left;
-        }
-
-        .room-name {
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .room-players {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .empty-rooms {
-            color: var(--text-muted);
-            font-size: 14px;
-            padding: 20px;
-            background: #16171a;
-            border-radius: 10px;
-            border: 1px dashed var(--border-color);
-        }
-
-        /* --- HALAMAN FORM CREATE / JOIN ROOM --- */
-        #page-room-form {
-            background: radial-gradient(circle at center, #1e2026 0%, #121214 100%);
-        }
-
-        .sidebar-panel {
-            width: 320px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 2;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            text-align: left;
-        }
-
-        .form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .form-control {
-            background: #252830;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            color: var(--text-main);
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-control:focus {
-            border-color: var(--accent-green);
-        }
-
-        .center-hero {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        .hero-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 450px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-
-        /* --- HALAMAN 2: ARENA GAME --- */
-        #page-game {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        .game-sidebar {
-            width: 300px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .audio-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: #23252b;
-            padding: 14px;
-            border-radius: 10px;
-        }
-
-        .audio-btn {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #18191c;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-
-        .toggle-badge {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .toggle-on { background: var(--accent-green); color: #fff; }
-        .toggle-off { background: var(--accent-red); color: #fff; }
-
-        .player-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .player-card {
-            background: #23252b;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        /* ARENA BOARD CONTAINER & COORDINATES */
-        .game-arena {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #141518;
-            padding: 20px;
-            position: relative;
-        }
-
-        .board-wrapper {
-            position: relative;
-            padding: 25px;
-            background: #1a1c23;
-            border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-        }
-
-        .chess-board {
-            display: grid;
-            grid-template-columns: repeat(8, 65px);
-            grid-template-rows: repeat(8, 65px);
-            border: 2px solid #2f323a;
-            position: relative;
-        }
-
-        .square {
-            width: 65px;
-            height: 65px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 45px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .square.selected {
-            background-color: rgba(241, 196, 15, 0.6) !important;
-        }
-
-        .square.highlight {
-            position: relative;
-        }
-
-        .square.highlight::after {
-            content: '';
-            width: 18px;
-            height: 18px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 50%;
-            position: absolute;
-        }
-
-        /* Coordinates Styling */
-        .coord-rank {
-            position: absolute;
-            left: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            height: calc(100% - 50px);
-            top: 25px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-        }
-
-        .coord-file {
-            position: absolute;
-            bottom: 6px;
-            display: flex;
-            justify-content: space-around;
-            width: calc(100% - 50px);
-            left: 25px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-        }
-
-        /* Themes Variable Mapping */
-        .theme-ocean .light { background-color: var(--board-ocean-light); }
-        .theme-ocean .dark { background-color: var(--board-ocean-dark); }
-        .theme-emerald .light { background-color: var(--board-emerald-light); }
-        .theme-emerald .dark { background-color: var(--board-emerald-dark); }
-        .theme-classic .light { background-color: var(--board-classic-light); }
-        .theme-classic .dark { background-color: var(--board-classic-dark); }
-        .theme-wood .light { background-color: var(--board-wood-light); }
-        .theme-wood .dark { background-color: var(--board-wood-dark); }
-
-        /* CHAT SIDEBAR */
-        .chat-sidebar {
-            width: 320px;
-            background: var(--bg-sidebar);
-            border-left: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .msg {
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            max-width: 85%;
-            word-break: break-word;
-        }
-
-        .msg.me {
-            background: var(--accent-green);
-            align-self: flex-end;
-            color: #fff;
-        }
-
-        .msg.opp {
-            background: #2c2f38;
-            align-self: flex-start;
-        }
-
-        .msg.system {
-            background: rgba(52, 152, 219, 0.15);
-            color: var(--accent-blue);
-            align-self: center;
-            text-align: center;
-            width: 100%;
-            font-size: 12px;
-        }
-
-        .chat-input-area {
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: 8px;
-        }
-
-        /* MODALS */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow-y: auto; height: auto; }
+            #sidebar { width: 100%; border-right: none; border-bottom: 1px solid #312e2b; padding: 15px; }
+            #mainContent { padding: 10px; min-height: calc(100vh - 120px); }
+            #gameScreen { flex-direction: column; gap: 15px; width: 100%; padding-bottom: 30px; }
+            #chessboard-container { width: 100%; max-width: 100%; }
+            #chatContainer { width: 100%; height: 320px; }
+            .sidebar-logo-area { flex-direction: row; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
+            .sidebar-logo-wrapper { width: 45px; height: 45px; margin-bottom: 0; }
+            .sidebar-logo-area h1 { font-size: 16px; margin-left: 10px; flex-grow: 1; text-align: left; }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <audio id="remoteAudio" autoplay></audio>
 
-        <!-- ==================== HALAMAN 1: LOBBY UTAMA ==================== -->
-        <div id="page-lobby" class="view-page active">
+    <div id="sidebar">
+        <div class="top-side">
+            <div class="sidebar-logo-area">
+                <div class="sidebar-logo-wrapper">
+                    <img src="MSA.jpeg" alt="MSA Logo" class="sidebar-logo-img" onerror="this.style.display='none'">
+                </div>
+                <h1>MSA CATUR</h1>
+                <div class="online-counter">
+                    <span class="online-dot"></span> <span id="onlineCount">1</span> Online
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="boardTheme">Gaya Papan</label>
+                <select id="boardTheme" onchange="changeTheme()">
+                    <option value="theme-classic">Classic Green</option>
+                    <option value="theme-blue" selected>Ocean Blue</option>
+                    <option value="theme-wood">Burnt Wood</option>
+                    <option value="theme-charcoal">Charcoal Grey</option>
+                </select>
+            </div>
+            
+            <div id="inGameInfo" style="display: none;">
+                <div class="media-controls">
+                    <div class="control-row">
+                        <span>🔊 Speaker (Dengar)</span>
+                        <button id="speakerBtn" class="toggle-btn on" onclick="toggleSpeaker()">ON</button>
+                    </div>
+                    <div class="control-row">
+                        <span>🎙️ Mikrofon (Kirim)</span>
+                        <button id="micBtn" class="toggle-btn off" onclick="toggleMic()">OFF</button>
+                    </div>
+                </div>
+
+                <div class="player-card" id="oppCard">
+                    <span id="oppNameDisplay">Mengecek lawan...</span>
+                </div>
+                <div class="player-card" id="myCard">
+                    <span id="myNameDisplay">👤 Anda</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-side">
+            <div id="lobbyForm">
+                <div class="form-group">
+                    <label for="username">Nama Pemain</label>
+                    <input type="text" id="username" placeholder="Nama Anda..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="roomName">Nama Kamar (Room)</label>
+                    <input type="text" id="roomName" placeholder="Nama Room..." autocomplete="off">
+                </div>
+                <button class="btn" onclick="joinRoom()">Masuk Game</button>
+            </div>
+            <div id="leaveArea" style="display: none;">
+                <button class="btn danger" onclick="askToLeave()">Keluar Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="modal-overlay" id="systemModal">
+            <div class="modal-content">
+                <div class="modal-title" id="modalTitle">INFORMASI</div>
+                <div class="modal-desc" id="modalDesc">-</div>
+                <div class="modal-btn-group" id="modalButtons"></div>
+            </div>
+        </div>
+
+        <div id="lobbyScreen">
             <div class="lobby-card">
-                <div class="brand-header">
-                    <div class="brand-icon"><i class="fa-solid => fa-chess-knight"></i></div>
-                    <h1 class="brand-title">MSA CATUR ONLINE</h1>
-                    <div class="online-badge">
-                        <span class="pulse-dot"></span>
-                        <span id="onlineCount">1</span> Pemain Online
-                    </div>
-                </div>
-
-                <div class="lobby-actions">
-                    <button class="btn" onclick="switchPage('page-room-form')">
-                        <i class="fa-solid fa-plus"></i> Buat Room Baru
-                    </button>
-                </div>
-
-                <div class="room-section-title">
-                    <span><i class="fa-solid fa-list"></i> Room Aktif Saat Ini</span>
-                    <span id="roomCountText">0 Room</span>
-                </div>
-
-                <div id="activeRoomsList" class="room-list">
-                    <div class="empty-rooms">Belum ada room aktif. Buat room pertama Anda!</div>
-                </div>
+                <h2 class="lobby-title">MSA CATUR ONLINE</h2>
+                <p class="lobby-subtitle">Voice Chat & Realtime</p>
+                <p class="lobby-desc">Ketik Nama Pemain & Nama Kamar di kolom kiri untuk masuk arena bertanding.</p>
             </div>
         </div>
 
-        <!-- ==================== HALAMAN FORM: BUAT / JOIN ROOM ==================== -->
-        <div id="page-room-form" class="view-page">
-            <div class="sidebar-panel">
-                <div class="brand-header" style="margin-bottom:0; text-align:left; align-items:flex-start;">
-                    <h2 class="brand-title" style="font-size:20px;">MSA CATUR</h2>
-                    <div class="online-badge"><span class="pulse-dot"></span> <span id="onlineCount2">1</span> Online</div>
-                </div>
-
-                <hr style="border-color: var(--border-color);">
-
-                <div class="form-group">
-                    <label for="inputUsername">Nama Pemain</label>
-                    <input type="text" id="inputUsername" class="form-control" placeholder="Nama Anda..." maxlength="15">
-                </div>
-
-                <div class="form-group">
-                    <label for="inputRoomName">Nama Kamar (Room)</label>
-                    <input type="text" id="inputRoomName" class="form-control" placeholder="Nama Room..." maxlength="15">
-                </div>
-
-                <div class="form-group">
-                    <label for="selectBoardTheme">Gaya Papan Catur</label>
-                    <select id="selectBoardTheme" class="form-control">
-                        <option value="theme-ocean">Ocean Blue</option>
-                        <option value="theme-emerald">Emerald Green</option>
-                        <option value="theme-classic">Classic Wood</option>
-                        <option value="theme-wood">Dark Wood</option>
-                    </select>
-                </div>
-
-                <button class="btn" onclick="handleJoinOrCreate()"><i class="fa-solid fa-right-to-bracket"></i> Masuk Game</button>
-                <button class="btn btn-secondary" onclick="switchPage('page-lobby')"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
-            </div>
-
-            <div class="center-hero">
-                <div class="hero-card">
-                    <h2 style="margin-bottom: 10px;">MSA CATUR ONLINE</h2>
-                    <p style="color: var(--accent-green); font-weight:700; font-size:13px; margin-bottom: 15px;">VOICE CHAT & REALTIME</p>
-                    <p style="color: var(--text-muted); font-size:14px; line-height: 1.6;">
-                        Ketik Nama Pemain & Nama Kamar di kolom kiri, pilih gaya papan favorit Anda, lalu masuk ke arena bertanding!
-                    </p>
-                </div>
+        <div id="waitingScreen">
+            <div class="waiting-box">
+                <div class="spinner"></div>
+                <h3 style="margin-bottom: 10px;">Menunggu Lawan...</h3>
+                <p style="color: #bababa; font-size: 14px;">Kamar: <strong id="waitingRoomName" style="color: #81b64c;">-</strong></p>
             </div>
         </div>
 
-        <!-- ==================== HALAMAN 2: ARENA GAME ==================== -->
-        <div id="page-game" class="view-page">
-            <div class="game-sidebar">
-                <div>
-                    <div class="brand-header" style="align-items:flex-start; margin-bottom:15px;">
-                        <h2 class="brand-title" style="font-size:20px;">MSA CATUR</h2>
-                        <div class="online-badge"><span class="pulse-dot"></span> Online</div>
-                    </div>
-
-                    <!-- Pilihan Gaya Papan TELAH DIHAPUS dari halaman ini sesuai permintaan -->
-
-                    <div class="audio-controls">
-                        <div class="audio-btn">
-                            <span><i class="fa-solid fa-volume-high"></i> Speaker</span>
-                            <span class="toggle-badge toggle-on" id="btnSpeaker" onclick="toggleSpeaker()">ON</span>
-                        </div>
-                        <div class="audio-btn">
-                            <span><i class="fa-solid fa-microphone"></i> Mikrofon</span>
-                            <span class="toggle-badge toggle-off" id="btnMic" onclick="toggleMic()">OFF</span>
-                        </div>
-                    </div>
-
-                    <div class="player-list">
-                        <div class="player-card" id="oppNameDisplay">
-                            <i class="fa-solid fa-user"></i> Menunggu Lawan...
-                        </div>
-                        <div class="player-card" id="myNameDisplay" style="border-left: 4px solid var(--accent-green);">
-                            <i class="fa-solid fa-user"></i> Anda
-                        </div>
-                    </div>
+        <div id="gameScreen">
+            <div id="chessboard-container">
+                <div class="captured-panel">
+                    <div class="captured-box" id="captured-white-box"></div>
                 </div>
 
-                <button class="btn btn-danger" onclick="leaveGame()"><i class="fa-solid fa-door-open"></i> Keluar Game</button>
-            </div>
+                <div id="chessboard" class="theme-blue"></div>
 
-            <!-- Arena Utama Papan Catur -->
-            <div class="game-arena">
-                <div class="board-wrapper">
-                    <!-- Numbers 1-8 -->
-                    <div class="coord-rank" id="coordRanks"></div>
-                    
-                    <!-- Board Grid -->
-                    <div class="chess-board" id="chessBoard"></div>
-
-                    <!-- Letters A-H -->
-                    <div class="coord-file" id="coordFiles"></div>
+                <div class="captured-panel">
+                    <div class="captured-box" id="captured-black-box"></div>
                 </div>
             </div>
 
-            <!-- Chat Sidebar -->
-            <div class="chat-sidebar">
-                <div class="chat-header"><i class="fa-solid fa-comments"></i> Obrolan Kamar</div>
-                <div class="chat-messages" id="chatMessages"></div>
+            <div id="chatContainer">
+                <div class="chat-header">Obrolan Kamar</div>
+                <div id="chatMessages"></div>
                 <div class="chat-input-area">
-                    <input type="text" id="btn-input" class="form-control" placeholder="Ketik pesan..." onkeydown="if(event.key==='Enter') sendMessage()">
-                    <button class="btn" style="flex:0;" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                    <input type="text" id="btn-input" placeholder="Ketik pesan..." onkeypress="if(event.keyCode==13) sendMessage()">
+                    <button onclick="sendMessage()">Kirim</button>
                 </div>
             </div>
         </div>
-
     </div>
-
-    <!-- MODAL POPUP SYSTEM -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-card">
-            <h3 id="modalTitle" style="margin-bottom:10px;">Informasi</h3>
-            <p id="modalBody" style="color:var(--text-muted); font-size:14px; margin-bottom:20px;"></p>
-            <div id="modalActions"></div>
-        </div>
-    </div>
-
-    <!-- AUDIO SOUND EFFECTS -->
-    <audio id="soundMove" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/move-self.mp3"></audio>
-    <audio id="soundCapture" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/capture.mp3"></audio>
-    <audio id="soundStart" src="https://images.chesscomfiles.com/chess-themes/sounds/standard/1000/game-start.mp3"></audio>
 
     <script>
-        // --- CHESS PIECE SYMBOLS ---
-        const PIECE_SYMBOLS = {
-            'p': '♟', 'r': '♜', 'n': '➞', 'b': '♝', 'q': '♛', 'k': '♚',
-            'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔'
-        };
-
-        // --- GLOBAL VARIABLES ---
         const socket = io();
         let chess = null;
-        let myColor = 'w';
+        let myColor = null; 
         let myUsername = '';
         let currentRoom = '';
         let selectedSquare = null;
         let possibleMoves = [];
-        let activeTheme = 'theme-ocean';
+        let gameStarted = false;
 
-        // WebRTC & Audio State
         let localStream = null;
         let peerConnection = null;
+        let isSpeakerOn = true; 
         let isMicOn = false;
-        let isSpeakerOn = true;
 
-        const soundMove = document.getElementById('soundMove');
-        const soundCapture = document.getElementById('soundCapture');
-        const soundStart = document.getElementById('soundStart');
+        let isMakingOffer = false;
+        
+        const isPolite = () => myColor === 'b'; 
 
-        // --- NAVIGASI HALAMAN ---
-        function switchPage(pageId) {
-            document.querySelectorAll('.view-page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+        const rtcConfig = { 
+    iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          {
+            urls: 'turn:catur-msa.metered.live:80', 
+            username: 'catur-msa.metered.live',
+            credential: 'fNAqN-m1TytB4lawnr1pYF0nN50BGYOBJPdJ5XKqg0tXZQdJ'
+          },
+          {
+            urls: 'turn:catur-msa.metered.live:443?transport=tcp',
+            username: 'catur-msa.metered.live',
+            credential: 'fNAqN-m1TytB4lawnr1pYF0nN50BGYOBJPdJ5XKqg0tXZQdJ'
+          }
+         ]
+       };
+        const soundMove = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Move.ogg');
+        const soundCapture = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Capture.ogg');
+        const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav'); 
+
+        const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+        const INITIAL_PIECES = {
+            w: ['p','p','p','p','p','p','p','p', 'n','n', 'b','b', 'r','r', 'q'],
+            b: ['p','p','p','p','p','p','p','p', 'n','n', 'b','b', 'r','r', 'q']
+        };
+
+        function unlockAudioContext() {
+            [soundMove, soundCapture, soundStart].forEach(s => {
+                s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
+            });
+            document.removeEventListener('click', unlockAudioContext);
+            document.removeEventListener('touchstart', unlockAudioContext);
+        }
+        document.addEventListener('click', unlockAudioContext);
+        document.addEventListener('touchstart', unlockAudioContext);
+
+        function changeTheme() {
+            const select = document.getElementById('boardTheme');
+            const board = document.getElementById('chessboard');
+            if (board) board.className = select.value;
         }
 
-        // --- FORM ACTION ---
-        function handleJoinOrCreate(roomToJoin = null) {
-            const usernameInput = document.getElementById('inputUsername').value.trim();
-            const roomInput = roomToJoin || document.getElementById('inputRoomName').value.trim();
-            activeTheme = document.getElementById('selectBoardTheme').value;
+        async function joinRoom() {
+            myUsername = document.getElementById('username').value.trim();
+            currentRoom = document.getElementById('roomName').value.trim();
+            if (!myUsername || !currentRoom) return alert("Lengkapi data nama dan kamar!");
 
-            if (!usernameInput || !roomInput) {
-                openModal("Peringatan", "Silakan isi Nama Anda dan Nama Room!");
-                return;
-            }
+            try { chess = new Chess(); } catch (e) { console.error(e); }
 
-            myUsername = usernameInput;
-            currentRoom = roomInput;
-
-            // Terapkan Tema Papan yang Dipilih
-            const boardElem = document.getElementById('chessBoard');
-            boardElem.className = `chess-board ${activeTheme}`;
-
-            socket.emit('joinRoom', { room: currentRoom, username: myUsername });
-            switchPage('page-game');
-        }
-
-        function fillAndJoin(roomName) {
-            document.getElementById('inputRoomName').value = roomName;
-            switchPage('page-room-form');
-        }
-
-        // --- BOARD & COORDINATES RENDERER ---
-        function renderBoard() {
-            const boardElem = document.getElementById('chessBoard');
-            boardElem.innerHTML = '';
-
-            const isWhite = myColor === 'w';
-            const ranks = isWhite ? [8, 7, 6, 5, 4, 3, 2, 1] : [1, 2, 3, 4, 5, 6, 7, 8];
-            const files = isWhite ? ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] : ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'];
-
-            // Render Koordinat (Angka & Huruf)
-            renderCoordinates(ranks, files);
-
-            // Render Petak
-            for (let r = 0; r < 8; r++) {
-                for (let f = 0; f < 8; f++) {
-                    const squareName = files[f] + ranks[r];
-                    const squareDiv = document.createElement('div');
-                    
-                    const isLight = (r + f) % 2 === 0;
-                    squareDiv.className = `square ${isLight ? 'light' : 'dark'}`;
-                    squareDiv.dataset.square = squareName;
-
-                    if (selectedSquare === squareName) squareDiv.classList.add('selected');
-                    if (possibleMoves.includes(squareName)) squareDiv.classList.add('highlight');
-
-                    const piece = chess ? chess.get(squareName) : null;
-                    if (piece) {
-                        const pieceSymbol = piece.color === 'w' ? piece.type.toUpperCase() : piece.type.toLowerCase();
-                        squareDiv.innerText = PIECE_SYMBOLS[pieceSymbol] || '';
-                    }
-
-                    squareDiv.onclick = () => handleSquareClick(squareName);
-                    boardElem.appendChild(squareDiv);
-                }
-            }
-        }
-
-        function renderCoordinates(ranks, files) {
-            const rankElem = document.getElementById('coordRanks');
-            const fileElem = document.getElementById('coordFiles');
-
-            rankElem.innerHTML = ranks.map(r => `<div>${r}</div>`).join('');
-            fileElem.innerHTML = files.map(f => `<div>${f.toUpperCase()}</div>`).join('');
-        }
-
-        // --- GAME LOGIC ---
-        function handleSquareClick(squareName) {
-            if (!chess || chess.turn() !== myColor) return;
-
-            if (selectedSquare) {
-                if (possibleMoves.includes(squareName)) {
-                    const move = chess.move({ from: selectedSquare, to: squareName, promotion: 'q' });
-                    if (move) {
-                        socket.emit('makeMove', { room: currentRoom, move: move });
-                        playGameSound(move.captured);
-                        selectedSquare = null;
-                        possibleMoves = [];
-                        renderBoard();
-                        return;
-                    }
-                }
-            }
-
-            const piece = chess.get(squareName);
-            if (piece && piece.color === myColor) {
-                selectedSquare = squareName;
-                const moves = chess.moves({ square: squareName, verbose: true });
-                possibleMoves = moves.map(m => m.to);
-            } else {
-                selectedSquare = null;
-                possibleMoves = [];
-            }
-            renderBoard();
-        }
-
-        function playGameSound(isCapture) {
-            if (!isSpeakerOn) return;
             try {
-                if (isCapture) {
-                    soundCapture.currentTime = 0; soundCapture.play().catch(()=>{});
-                } else {
-                    soundMove.currentTime = 0; soundMove.play().catch(()=>{});
-                }
-            } catch(e) {}
-        }
-
-        // --- CHAT SYSTEM ---
-        function sendMessage() {
-            const input = document.getElementById('btn-input');
-            const msg = input.value.trim();
-            if (msg && currentRoom) {
-                socket.emit('chatMessage', { room: currentRoom, username: myUsername, message: msg });
-                appendMessage({ username: 'Anda', message: msg }, 'me');
-                input.value = '';
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+                    video: false 
+                });
+                localStream.getAudioTracks().forEach(track => { track.enabled = isMicOn; });
+            } catch (err) {
+                console.error("Gagal inisialisasi mic:", err);
             }
+
+            socket.emit('joinRoom', { username: myUsername, room: currentRoom });
+            
+            document.getElementById('lobbyScreen').style.display = 'none';
+            document.getElementById('waitingRoomName').innerText = currentRoom;
+            document.getElementById('waitingScreen').style.display = 'flex'; 
+            document.getElementById('lobbyForm').style.display = 'none';
+            document.getElementById('inGameInfo').style.display = 'block';
+            document.getElementById('leaveArea').style.display = 'block';
+            document.getElementById('myNameDisplay').innerText = `👤 ${myUsername} (Anda)`;
+            
+            renderBoard();
+            changeTheme();
+            checkDeadPieces(); 
         }
 
-        function appendMessage(data, type) {
-            const box = document.getElementById('chatMessages');
-            if (!box) return;
-            const div = document.createElement('div');
-            div.className = `msg ${type}`;
-            div.innerText = type === 'system' || type === 'me' ? data.message : `${data.username}: ${data.message}`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
-        }
+        async function initPeerConnection() {
+            if (peerConnection) return;
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            
+            peerConnection.onnegotiationneeded = async () => {
+                try {
+                    isMakingOffer = true;
+                    const offer = await peerConnection.createOffer({ offerToReceiveAudio: true });
+                    await peerConnection.setLocalDescription(offer);
+                    socket.emit('webrtc-offer', { room: currentRoom, offer: offer });
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    isMakingOffer = false;
+                }
+            };
 
-        // --- AUDIO / VOICE CONTROLS ---
-        function toggleMic() {
-            isMicOn = !isMicOn;
-            const btn = document.getElementById('btnMic');
-            btn.className = `toggle-badge ${isMicOn ? 'toggle-on' : 'toggle-off'}`;
-            btn.innerText = isMicOn ? 'ON' : 'OFF';
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-candidate', { room: currentRoom, candidate: event.candidate });
+                }
+            };
+            
+            peerConnection.ontrack = (event) => {
+                const remoteAudio = document.getElementById('remoteAudio');
+                if (remoteAudio && event.streams && event.streams[0]) {
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.muted = !isSpeakerOn; 
+                    remoteAudio.play().catch(() => {});
+                }
+            };
+
             if (localStream) {
-                localStream.getAudioTracks().forEach(track => track.enabled = isMicOn);
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
             }
         }
 
         function toggleSpeaker() {
+            const btn = document.getElementById('speakerBtn');
+            const remoteAudio = document.getElementById('remoteAudio');
             isSpeakerOn = !isSpeakerOn;
-            const btn = document.getElementById('btnSpeaker');
-            btn.className = `toggle-badge ${isSpeakerOn ? 'toggle-on' : 'toggle-off'}`;
-            btn.innerText = isSpeakerOn ? 'ON' : 'OFF';
-        }
-
-        function leaveGame() {
-            openModal("Keluar Game", "Apakah Anda yakin ingin keluar ke Lobby?", 
-                `<button class="btn btn-danger" onclick="confirmLeave()">Ya, Keluar</button>
-                 <button class="btn btn-secondary" onclick="closeModal()" style="margin-top:8px;">Batal</button>`
-            );
-        }
-
-        function confirmLeave() {
-            location.reload();
-        }
-
-        function openModal(title, body, actionsHtml = '') {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalBody').innerText = body;
-            document.getElementById('modalActions').innerHTML = actionsHtml || `<button class="btn" onclick="closeModal()">Tutup</button>`;
-            document.getElementById('modalOverlay').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-        }
-
-        // --- SOCKET.IO EVENT HANDLERS ---
-
-        // Realtime Online Count & Room Detection
-        socket.on('updateOnlineCount', (count) => {
-            document.getElementById('onlineCount').innerText = count;
-            document.getElementById('onlineCount2').innerText = count;
-        });
-
-        socket.on('updateRoomList', (rooms) => {
-            const listElem = document.getElementById('activeRoomsList');
-            document.getElementById('roomCountText').innerText = `${rooms.length} Room`;
             
-            if (rooms.length === 0) {
-                listElem.innerHTML = `<div class="empty-rooms">Belum ada room aktif. Buat room pertama Anda!</div>`;
-                return;
+            if (isSpeakerOn) {
+                btn.innerText = "ON"; btn.className = "toggle-btn on";
+                if (remoteAudio) { remoteAudio.muted = false; remoteAudio.play().catch(() => {}); }
+            } else {
+                btn.innerText = "OFF"; btn.className = "toggle-btn off";
+                if (remoteAudio) { remoteAudio.muted = true; }
+            }
+        }
+
+        function toggleMic() {
+            const btn = document.getElementById('micBtn');
+            isMicOn = !isMicOn;
+            
+            if (localStream && localStream.getAudioTracks().length > 0) {
+                localStream.getAudioTracks()[0].enabled = isMicOn;
+                if (isMicOn) { btn.innerText = "ON"; btn.className = "toggle-btn on"; }
+                else { btn.innerText = "OFF"; btn.className = "toggle-btn off"; }
+            } else {
+                alert("Perangkat mikrofon belum siap.");
+                isMicOn = false;
+            }
+        }
+
+        function openModal(title, desc, buttonsHTML) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalButtons').innerHTML = buttonsHTML;
+            document.getElementById('systemModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('systemModal').style.display = 'none'; }
+        function askToLeave() {
+            openModal("Keluar Game?", "Koneksi ke ruangan catur akan terputus.", 
+                `<button class="btn danger" onclick="confirmLeave()">Ya</button><button class="btn secondary" onclick="closeModal()">Batal</button>`);
+        }
+        function confirmLeave() { window.location.reload(); }
+
+        // FUNGSI MENCARI KOORDINAT RAJA YANG SEDANG TERANCAM SKAK
+        function getKingSquare(color) {
+            if (!chess) return null;
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let r = 0; r < 8; r++) {
+                for (let f = 0; f < 8; f++) {
+                    const sq = files[f] + (r + 1);
+                    const piece = chess.get(sq);
+                    if (piece && piece.type === 'k' && piece.color === color) {
+                        return sq;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('chessboard');
+            if (!boardElement) return;
+            boardElement.innerHTML = '';
+
+            let turn = 'w';
+            if (chess) turn = chess.turn();
+
+            if (myColor) {
+                if (turn === myColor) {
+                    document.getElementById('myCard').classList.add('active');
+                    document.getElementById('oppCard').classList.remove('active');
+                } else {
+                    document.getElementById('oppCard').classList.add('active');
+                    document.getElementById('myCard').classList.remove('active');
+                }
             }
 
-            listElem.innerHTML = rooms.map(r => `
-                <div class="room-item">
-                    <div class="room-info">
-                        <div class="room-name"><i class="fa-solid fa-door-open" style="color:var(--accent-green)"></i> ${r.name}</div>
-                        <div class="room-players">${r.playerCount}/2 Pemain</div>
-                    </div>
-                    <button class="btn btn-secondary" style="flex:0; padding:8px 14px; font-size:12px;" 
-                        ${r.playerCount >= 2 ? 'disabled style="opacity:0.5"' : `onclick="fillAndJoin('${r.name}')"`}>
-                        ${r.playerCount >= 2 ? 'Penuh' : 'Join'}
-                    </button>
-                </div>
-            `).join('');
+            // Cek status skak aktif
+            let isCheck = chess ? chess.in_check() : false;
+            let checkTargetSquare = isCheck ? getKingSquare(turn) : null;
+
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let i = 0; i < 8; i++) {
+                const r = myColor === 'b' ? i : 7 - i; 
+                for (let j = 0; j < 8; j++) {
+                    const f = myColor === 'b' ? 7 - j : j;
+                    const squareName = files[f] + (r + 1);
+
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((i + j) % 2 === 0 ? 'white-sq' : 'black-sq');
+                    square.dataset.square = squareName;
+
+                    if (selectedSquare === squareName) square.classList.add('selected');
+                    if (possibleMoves.includes(squareName)) {
+                        square.classList.add('highlight');
+                        if (chess && chess.get(squareName)) square.classList.add('has-piece');
+                    }
+
+                    // Tambahkan kelas indikator visual jika kotak merupakan Raja yang kena skak
+                    if (squareName === checkTargetSquare) {
+                        square.classList.add('in-check');
+                    }
+
+                    if (chess) {
+                        const piece = chess.get(squareName);
+                        if (piece) {
+                            const img = document.createElement('img');
+                            img.classList.add('piece');
+                            img.src = `https://upload.wikimedia.org/wikipedia/commons/${getPieceImageName(piece.color, piece.type)}`;
+                            square.appendChild(img);
+                        }
+                    }
+                    square.onclick = () => handleSquareClick(squareName);
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        function getPieceImageName(color, type) {
+            const key = color + type;
+            const map = {
+                'wp': '4/45/Chess_plt45.svg', 'wn': '7/70/Chess_nlt45.svg', 'wb': 'b/b1/Chess_blt45.svg', 'wr': '7/72/Chess_rlt45.svg', 'wq': '1/15/Chess_qlt45.svg', 'wk': '4/42/Chess_klt45.svg',
+                'bp': 'c/c7/Chess_pdt45.svg', 'bn': 'e/ef/Chess_ndt45.svg', 'bb': '9/98/Chess_bdt45.svg', 'br': 'f/ff/Chess_rdt45.svg', 'bq': '4/47/Chess_qdt45.svg', 'bk': 'f/f0/Chess_kdt45.svg'
+            };
+            return map[key] || '';
+        }
+
+        function checkDeadPieces() {
+            if (!chess) return;
+
+            let activePieces = { w: [], b: [] };
+            chess.board().forEach(row => {
+                row.forEach(square => {
+                    if (square && square.type !== 'k') {
+                        activePieces[square.color].push(square.type);
+                    }
+                });
+            });
+
+            let deadWhite = [...INITIAL_PIECES.w];
+            activePieces.w.forEach(type => {
+                let idx = deadWhite.indexOf(type);
+                if (idx > -1) deadWhite.splice(idx, 1);
+            });
+
+            let deadBlack = [...INITIAL_PIECES.b];
+            activePieces.b.forEach(type => {
+                let idx = deadBlack.indexOf(type);
+                if (idx > -1) deadBlack.splice(idx, 1);
+            });
+
+            const order = ['p', 'n', 'b', 'r', 'q'];
+            deadWhite.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+            deadBlack.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+
+            let whiteLossScore = deadWhite.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
+            let blackLossScore = deadBlack.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
+
+            let whiteAdvantage = blackLossScore - whiteLossScore;
+            let blackAdvantage = whiteLossScore - blackLossScore;
+
+            renderDeadDOM('captured-white-box', 'w', deadWhite, blackAdvantage);
+            renderDeadDOM('captured-black-box', 'b', deadBlack, whiteAdvantage);
+        }
+
+        function renderDeadDOM(boxId, color, deadArray, advantage) {
+            const container = document.getElementById(boxId);
+            if(!container) return;
+            container.innerHTML = '';
+
+            deadArray.forEach(type => {
+                const img = document.createElement('img');
+                img.className = 'dead-piece';
+                img.src = `https://upload.wikimedia.org/wikipedia/commons/${getPieceImageName(color, type)}`;
+                container.appendChild(img);
+            });
+
+            if (advantage > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'score-badge';
+                badge.innerText = `+${advantage}`;
+                container.appendChild(badge);
+            }
+        }
+
+        // FUNGSI UTAMA UNTUK CEK KONDISI AKHIR PERMAINAN (MENANG / SKAKMAT / REMIS)
+        function checkGameStatus() {
+            if (!chess) return;
+
+            if (chess.game_over()) {
+                let title = "PERMAINAN SELESAI";
+                let description = "";
+
+                if (chess.in_checkmate()) {
+                    const loserColor = chess.turn();
+                    if (loserColor === myColor) {
+                        title = "🏆 KAMU KALAH!";
+                        description = "Raja Anda terkena Skakmat. Lawan memenangkan pertandingan.";
+                    } else {
+                        title = "🏆 KAMU MENANG!";
+                        description = "Selamat! Anda berhasil melakukan Skakmat kepada Raja lawan.";
+                    }
+                } else if (chess.in_draw() || chess.in_stalemate() || chess.in_threefold_repetition()) {
+                    title = "🤝 HASIL REMIS (DRAW)";
+                    description = "Pertandingan berakhir imbang akibat Remis, Stalemate, atau Pengulangan Tiga Kali Lipat.";
+                }
+
+                openModal(title, description, `<button class="btn" onclick="closeModal()">Lihat Papan</button><button class="btn secondary" onclick="confirmLeave()">Keluar Kamar</button>`);
+                appendMessage({ message: `🏁 Game Selesai: ${title}. ${description}` }, 'system');
+            }
+        }
+
+        function handleSquareClick(squareName) {
+            if (!chess || chess.turn() !== myColor || chess.game_over() || !gameStarted) return; 
+
+            if (possibleMoves.includes(squareName)) {
+                const moveData = { from: selectedSquare, to: squareName, promotion: 'q' };
+                const targetPiece = chess.get(squareName);
+                const move = chess.move(moveData);
+                
+                if (move) {
+                    socket.emit('makeMove', { room: currentRoom, move: moveData, san: move.san, fen: chess.fen() });
+                    playGameSound(!!targetPiece);
+                    selectedSquare = null; possibleMoves = [];
+                    renderBoard();
+                    checkDeadPieces(); 
+                    checkGameStatus(); // Periksa status kemenangan setelah melangkah
+                }
+            } else {
+                const piece = chess.get(squareName);
+                if (piece && piece.color === myColor) {
+                    selectedSquare = squareName;
+                    const moves = chess.moves({ square: squareName, verbose: true });
+                    possibleMoves = moves.map(m => m.to);
+                } else {
+                    selectedSquare = null; possibleMoves = [];
+                }
+                renderBoard();
+            }
+        }
+
+        function playGameSound(isCapture) {
+            try {
+                if (isCapture) { soundCapture.currentTime = 0; soundCapture.play().catch(()=>{}); }
+                else { soundMove.currentTime = 0; soundMove.play().catch(()=>{}); }
+            } catch(e) {}
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('btn-input');
+            const message = input.value.trim();
+            if (!message) return;
+            socket.emit('chatMessage', { room: currentRoom, username: myUsername, message: message });
+            appendMessage({ username: myUsername, message: message }, 'me');
+            input.value = '';
+        }
+
+        function appendMessage(data, type) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            const div = document.createElement('div');
+            div.classList.add('msg', type);
+            if (type === 'system') div.innerText = data.message;
+            else div.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        socket.on('initRole', (role) => {
+            myColor = role; 
+            appendMessage({ message: `Anda masuk sebagai tim ${role === 'w' ? 'PUTIH' : 'HITAM'}.` }, 'system');
+            renderBoard();
+            checkDeadPieces();
         });
 
-        socket.on('startGame', (data) => {
-            myColor = data.color;
-            chess = new Chess(data.fen || undefined);
+        socket.on('onlineCountUpdate', (count) => {
+            const el = document.getElementById('onlineCount');
+            if(el) el.innerText = count;
+        });
 
-            const oppName = data.players.find(p => p.id !== socket.id)?.username || 'Lawan';
-            document.getElementById('oppNameDisplay').innerHTML = `<i class="fa-solid fa-user"></i> ${oppName}`;
-            document.getElementById('myNameDisplay').innerHTML = `<i class="fa-solid fa-user"></i> ${myUsername} (${myColor === 'w' ? 'Putih' : 'Hitam'})`;
+        socket.on('updatePlayers', async (players) => {
+            const opponent = players.find(p => p.username !== myUsername);
+            if (opponent) {
+                document.getElementById('oppNameDisplay').innerText = `👤 ${opponent.username} (${opponent.color === 'w' ? 'Putih' : 'Hitam'})`;
+                
+                if (!gameStarted && players.length === 2) {
+                    gameStarted = true;
+                    document.getElementById('waitingScreen').style.display = 'none';
+                    document.getElementById('gameScreen').style.display = 'flex';
+                    
+                    soundStart.currentTime = 0; soundStart.play().catch(()=>{});
+                    
+                    await initPeerConnection(); 
+                    setTimeout(() => { socket.emit('voice-ready', currentRoom); }, 1000);
 
-            renderBoard();
-            soundStart.play().catch(()=>{});
-            appendMessage({ message: `🎮 Game dimulai! Anda bermain sebagai ${myColor === 'w' ? 'Putih' : 'Hitam'}.` }, 'system');
+                    appendMessage({ message: "⚔️ Pertandingan dimulai! Saluran audio siap digunakan bersama." }, 'system');
+                }
+            }
         });
 
         socket.on('moveMade', (data) => {
             if (chess) {
-                const captured = chess.get(data.move.to);
-                chess.move(data.move);
-                playGameSound(captured);
+                const currentPieceAtTarget = chess.get(data.move.to);
+                chess.load(data.fen);
+                playGameSound(!!currentPieceAtTarget);
+                renderBoard();
+                checkDeadPieces(); 
+                checkGameStatus(); // Periksa status kemenangan setelah menerima langkah lawan
+            }
+        });
+
+        socket.on('chatMessage', (data) => { if (data.username !== myUsername) appendMessage(data, 'opp'); });
+        socket.on('systemMessage', (message) => { appendMessage({ message: message }, 'system'); });
+
+        socket.on('voice-ready', async () => {
+            await initPeerConnection();
+        });
+
+        socket.on('voice-offer', async (data) => {
+            await initPeerConnection();
+            try {
+                const readyState = peerConnection.signalingState;
+                const collision = (isMakingOffer || readyState !== "stable");
+                
+                if (collision && !isPolite()) return;
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('webrtc-answer', { room: currentRoom, answer: answer });
+            } catch(e) { console.error(e); }
+        });
+
+        socket.on('voice-answer', async (data) => {
+            if (peerConnection) {
+                try { 
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer)); 
+                } catch(e) { console.error(e); }
+            }
+        });
+
+        socket.on('webrtc-candidate', async (data) => {
+            if (peerConnection) {
+                try { 
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); 
+                } catch(e) {}
+            }
+        });
+
+        socket.on('voice-disconnect', () => {
+            if (peerConnection) { peerConnection.close(); peerConnection = null; }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSA CHESS ONLINE</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #161512; color: #fff; overflow: hidden; flex-direction: row; }
+        
+        #sidebar { width: 320px; background-color: #262522; display: flex; flex-direction: column; padding: 20px; border-right: 1px solid #312e2b; justify-content: space-between; z-index: 5; flex-shrink: 0; }
+        .sidebar-logo-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #312e2b; }
+        .sidebar-logo-wrapper { width: 80px; height: 80px; background-color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 10px; }
+        .sidebar-logo-img { width: 100%; height: 100%; object-fit: contain; }
+        .sidebar-logo-area h1 { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        
+        .online-counter { font-size: 11px; color: #81b64c; background-color: rgba(129,182,76,0.1); padding: 4px 10px; border-radius: 20px; margin-top: 5px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+        .online-dot { width: 6px; height: 6px; background-color: #81b64c; border-radius: 50%; display: inline-block; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #bababa; font-size: 13px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background-color: #312e2b; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 15px; }
+        
+        .btn { width: 100%; padding: 12px; background-color: #81b64c; border: none; border-radius: 4px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 0 #67923d; }
+        .btn:hover { background-color: #95cc5a; }
+        .btn.danger { width: 100%; padding: 12px; background-color: #f44336; border: none; border-radius: 4px; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #b71c1c; }
+        .btn.danger:hover { background-color: #e57373; }
+        .btn.secondary { background-color: #45423e; box-shadow: 0 4px 0 #312e2b; margin-top: 10px;}
+        
+        .media-controls { background: #312e2b; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #45423e;}
+        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600;}
+        .toggle-btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; color: #fff; min-width: 60px; text-align: center;}
+        .toggle-btn.on { background-color: #81b64c; }
+        .toggle-btn.off { background-color: #f44336; }
+
+        .player-card { background-color: #312e2b; padding: 12px 15px; border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid #45423e; font-weight: 600; font-size: 14px; }
+        .player-card.active { border-left-color: #81b64c; background-color: #3a3733; }
+        
+        #mainContent { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; background-color: #161512; overflow-y: auto; }
+        #lobbyScreen { position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, #22211e 0%, #161512 100%); z-index: 10; text-align: center; padding: 30px; }
+        .lobby-card { background-color: #262522; padding: 40px 30px; border-radius: 12px; border: 1px solid #312e2b; box-shadow: 0 20px 40px rgba(0,0,0,0.6); max-width: 440px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .lobby-title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #fff; margin-bottom: 8px; }
+        .lobby-subtitle { font-size: 13px; color: #81b64c; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+        .lobby-desc { color: #bababa; font-weight: 400; font-size: 14px; line-height: 1.5; border-top: 1px solid #312e2b; padding-top: 15px; }
+
+        #waitingScreen { display: none; position: absolute; width: 100%; height: 100%; background: #161512; z-index: 9; flex-direction: column; justify-content: center; align-items: center; }
+        .waiting-box { background: #262522; padding: 40px; border-radius: 12px; border: 1px solid #312e2b; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 400px; width: 90%; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #312e2b; border-top: 5px solid #81b64c; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #gameScreen { display: none; width: 100%; justify-content: center; align-items: center; gap: 25px; }
+        #chessboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; gap: 8px; }
+        
+        .captured-panel { display: flex; width: 100%; align-items: center; justify-content: flex-start; padding: 8px 14px; min-height: 44px; background-color: #21201d; border: 1px solid #312e2b; border-radius: 6px; box-sizing: border-box; }
+        .captured-box { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .dead-piece { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4)); opacity: 0.85; transition: all 0.2s ease; }
+        .dead-piece:hover { opacity: 1; transform: scale(1.1); }
+        .score-badge { color: #fff; font-size: 12px; font-weight: 800; background: #81b64c; padding: 2px 7px; border-radius: 4px; font-family: sans-serif; margin-left: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+        
+        #chessboard { display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); width: 100%; aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.8); border: 2px solid #2b2a27; }
+        
+        .square { display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; user-select: none; }
+        .theme-classic .white-sq { background-color: #eeeed2; }
+        .theme-classic .black-sq { background-color: #769656; }
+        .theme-blue .white-sq { background-color: #ebecf0; }
+        .theme-blue .black-sq { background-color: #4b7399; }
+        .theme-wood .white-sq { background-color: #dcb35c; }
+        .theme-wood .black-sq { background-color: #8d5b4c; }
+        .theme-charcoal .white-sq { background-color: #e3e3e3; }
+        .theme-charcoal .black-sq { background-color: #707070; }
+        
+        .square.selected { background-color: rgba(247, 247, 105, 0.4) !important; }
+        .square.highlight::after { content: ''; position: absolute; width: 24%; height: 24%; background-color: rgba(0, 0, 0, 0.15); border-radius: 50%; pointer-events: none; }
+        .square.highlight.has-piece::after { width: 80%; height: 80%; background: none; border: 5px solid rgba(0, 0, 0, 0.12); border-radius: 50%; }
+        
+        /* EFEK VISUAL SKAK (CHECK) UNTUK RAJA */
+        .square.in-check { background: radial-gradient(circle, rgba(255,0,0,0.9) 0%, rgba(230,0,0,0.6) 60%, transparent 100%) !important; animation: checkPulse 1s infinite alternate; }
+        @keyframes checkPulse { 0% { opacity: 0.8; } 100% { opacity: 1; filter: saturate(1.3); } }
+
+        .piece { width: 92%; height: 92%; object-fit: contain; z-index: 2; filter: none !important; color-scheme: light !important; }
+        
+        #chatContainer { width: 320px; height: 630px; background-color: #262522; border-radius: 6px; display: flex; flex-direction: column; border: 1px solid #312e2b; flex-shrink: 0; box-shadow: 0 12px 25px rgba(0,0,0,0.5); }
+        .chat-header { padding: 14px; background-color: #312e2b; border-bottom: 1px solid #3d3a35; font-weight: bold; font-size: 14px; color: #bababa; }
+        #chatMessages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+        .msg { padding: 8px 12px; border-radius: 6px; max-width: 85%; word-break: break-word; }
+        .msg.system { background-color: rgba(129,182,76,0.15); color: #81b64c; align-self: center; text-align: center; font-size: 11px; width: 100%; }
+        .msg.me { background-color: #81b64c; color: #fff; align-self: flex-end; }
+        .msg.opp { background-color: #312e2b; color: #fff; align-self: flex-start; border: 1px solid #45423e; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #312e2b; display: flex; gap: 6px; background-color: #1e1d1b; border-radius: 0 0 6px 6px; }
+        .chat-input-area input { flex: 1; padding: 10px 12px; background-color: #262522; border: 1px solid #45423e; border-radius: 4px; color: #fff; font-size: 13px; }
+        .chat-input-area button { padding: 0 16px; background-color: #81b64c; border: none; border-radius: 4px; color: #fff; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .chat-input-area button:hover { background-color: #95cc5a; }
+
+        .modal-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background-color: #262522; padding: 30px; border-radius: 8px; text-align: center; border: 1px solid #45423e; max-width: 400px; width: 90%; }
+        .modal-title { font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #81b64c; }
+        .modal-desc { color: #bababa; margin-bottom: 20px; font-size: 15px; line-height: 1.4; }
+        .modal-btn-group { display: flex; gap: 10px; justify-content: center; }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow-y: auto; height: auto; }
+            #sidebar { width: 100%; border-right: none; border-bottom: 1px solid #312e2b; padding: 15px; }
+            #mainContent { padding: 10px; min-height: calc(100vh - 120px); }
+            #gameScreen { flex-direction: column; gap: 15px; width: 100%; padding-bottom: 30px; }
+            #chessboard-container { width: 100%; max-width: 100%; }
+            #chatContainer { width: 100%; height: 320px; }
+            .sidebar-logo-area { flex-direction: row; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
+            .sidebar-logo-wrapper { width: 45px; height: 45px; margin-bottom: 0; }
+            .sidebar-logo-area h1 { font-size: 16px; margin-left: 10px; flex-grow: 1; text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="remoteAudio" autoplay></audio>
+
+    <div id="sidebar">
+        <div class="top-side">
+            <div class="sidebar-logo-area">
+                <div class="sidebar-logo-wrapper">
+                    <img src="MSA.jpeg" alt="MSA Logo" class="sidebar-logo-img" onerror="this.style.display='none'">
+                </div>
+                <h1>MSA CATUR</h1>
+                <div class="online-counter">
+                    <span class="online-dot"></span> <span id="onlineCount">1</span> Online
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="boardTheme">Gaya Papan</label>
+                <select id="boardTheme" onchange="changeTheme()">
+                    <option value="theme-classic">Classic Green</option>
+                    <option value="theme-blue" selected>Ocean Blue</option>
+                    <option value="theme-wood">Burnt Wood</option>
+                    <option value="theme-charcoal">Charcoal Grey</option>
+                </select>
+            </div>
+            
+            <div id="inGameInfo" style="display: none;">
+                <div class="media-controls">
+                    <div class="control-row">
+                        <span>🔊 Speaker (Dengar)</span>
+                        <button id="speakerBtn" class="toggle-btn on" onclick="toggleSpeaker()">ON</button>
+                    </div>
+                    <div class="control-row">
+                        <span>🎙️ Mikrofon (Kirim)</span>
+                        <button id="micBtn" class="toggle-btn off" onclick="toggleMic()">OFF</button>
+                    </div>
+                </div>
+
+                <div class="player-card" id="oppCard">
+                    <span id="oppNameDisplay">Mengecek lawan...</span>
+                </div>
+                <div class="player-card" id="myCard">
+                    <span id="myNameDisplay">👤 Anda</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-side">
+            <div id="lobbyForm">
+                <div class="form-group">
+                    <label for="username">Nama Pemain</label>
+                    <input type="text" id="username" placeholder="Nama Anda..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="roomName">Nama Kamar (Room)</label>
+                    <input type="text" id="roomName" placeholder="Nama Room..." autocomplete="off">
+                </div>
+                <button class="btn" onclick="joinRoom()">Masuk Game</button>
+            </div>
+            <div id="leaveArea" style="display: none;">
+                <button class="btn danger" onclick="askToLeave()">Keluar Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="modal-overlay" id="systemModal">
+            <div class="modal-content">
+                <div class="modal-title" id="modalTitle">INFORMASI</div>
+                <div class="modal-desc" id="modalDesc">-</div>
+                <div class="modal-btn-group" id="modalButtons"></div>
+            </div>
+        </div>
+
+        <div id="lobbyScreen">
+            <div class="lobby-card">
+                <h2 class="lobby-title">MSA CATUR ONLINE</h2>
+                <p class="lobby-subtitle">Voice Chat & Realtime</p>
+                <p class="lobby-desc">Ketik Nama Pemain & Nama Kamar di kolom kiri untuk masuk arena bertanding.</p>
+            </div>
+        </div>
+
+        <div id="waitingScreen">
+            <div class="waiting-box">
+                <div class="spinner"></div>
+                <h3 style="margin-bottom: 10px;">Menunggu Lawan...</h3>
+                <p style="color: #bababa; font-size: 14px;">Kamar: <strong id="waitingRoomName" style="color: #81b64c;">-</strong></p>
+            </div>
+        </div>
+
+        <div id="gameScreen">
+            <div id="chessboard-container">
+                <div class="captured-panel">
+                    <div class="captured-box" id="captured-white-box"></div>
+                </div>
+
+                <div id="chessboard" class="theme-blue"></div>
+
+                <div class="captured-panel">
+                    <div class="captured-box" id="captured-black-box"></div>
+                </div>
+            </div>
+
+            <div id="chatContainer">
+                <div class="chat-header">Obrolan Kamar</div>
+                <div id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="btn-input" placeholder="Ketik pesan..." onkeypress="if(event.keyCode==13) sendMessage()">
+                    <button onclick="sendMessage()">Kirim</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let chess = null;
+        let myColor = null; 
+        let myUsername = '';
+        let currentRoom = '';
+        let selectedSquare = null;
+        let possibleMoves = [];
+        let gameStarted = false;
+
+        let localStream = null;
+        let peerConnection = null;
+        let isSpeakerOn = true; 
+        let isMicOn = false;
+
+        let isMakingOffer = false;
+        
+        const isPolite = () => myColor === 'b'; 
+
+        const rtcConfig = { 
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        };
+
+        const soundMove = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Move.ogg');
+        const soundCapture = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Capture.ogg');
+        const soundStart = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav'); 
+
+        const PIECE_VALUES = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+        const INITIAL_PIECES = {
+            w: ['p','p','p','p','p','p','p','p', 'n','n', 'b','b', 'r','r', 'q'],
+            b: ['p','p','p','p','p','p','p','p', 'n','n', 'b','b', 'r','r', 'q']
+        };
+
+        function unlockAudioContext() {
+            [soundMove, soundCapture, soundStart].forEach(s => {
+                s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(() => {});
+            });
+            document.removeEventListener('click', unlockAudioContext);
+            document.removeEventListener('touchstart', unlockAudioContext);
+        }
+        document.addEventListener('click', unlockAudioContext);
+        document.addEventListener('touchstart', unlockAudioContext);
+
+        function changeTheme() {
+            const select = document.getElementById('boardTheme');
+            const board = document.getElementById('chessboard');
+            if (board) board.className = select.value;
+        }
+
+        async function joinRoom() {
+            myUsername = document.getElementById('username').value.trim();
+            currentRoom = document.getElementById('roomName').value.trim();
+            if (!myUsername || !currentRoom) return alert("Lengkapi data nama dan kamar!");
+
+            try { chess = new Chess(); } catch (e) { console.error(e); }
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, 
+                    video: false 
+                });
+                localStream.getAudioTracks().forEach(track => { track.enabled = isMicOn; });
+            } catch (err) {
+                console.error("Gagal inisialisasi mic:", err);
+            }
+
+            socket.emit('joinRoom', { username: myUsername, room: currentRoom });
+            
+            document.getElementById('lobbyScreen').style.display = 'none';
+            document.getElementById('waitingRoomName').innerText = currentRoom;
+            document.getElementById('waitingScreen').style.display = 'flex'; 
+            document.getElementById('lobbyForm').style.display = 'none';
+            document.getElementById('inGameInfo').style.display = 'block';
+            document.getElementById('leaveArea').style.display = 'block';
+            document.getElementById('myNameDisplay').innerText = `👤 ${myUsername} (Anda)`;
+            
+            renderBoard();
+            changeTheme();
+            checkDeadPieces(); 
+        }
+
+        async function initPeerConnection() {
+            if (peerConnection) return;
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            
+            peerConnection.onnegotiationneeded = async () => {
+                try {
+                    isMakingOffer = true;
+                    const offer = await peerConnection.createOffer({ offerToReceiveAudio: true });
+                    await peerConnection.setLocalDescription(offer);
+                    socket.emit('webrtc-offer', { room: currentRoom, offer: offer });
+                } catch (err) {
+                    console.error(err);
+                } finally {
+                    isMakingOffer = false;
+                }
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('webrtc-candidate', { room: currentRoom, candidate: event.candidate });
+                }
+            };
+            
+            peerConnection.ontrack = (event) => {
+                const remoteAudio = document.getElementById('remoteAudio');
+                if (remoteAudio && event.streams && event.streams[0]) {
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.muted = !isSpeakerOn; 
+                    remoteAudio.play().catch(() => {});
+                }
+            };
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+            }
+        }
+
+        function toggleSpeaker() {
+            const btn = document.getElementById('speakerBtn');
+            const remoteAudio = document.getElementById('remoteAudio');
+            isSpeakerOn = !isSpeakerOn;
+            
+            if (isSpeakerOn) {
+                btn.innerText = "ON"; btn.className = "toggle-btn on";
+                if (remoteAudio) { remoteAudio.muted = false; remoteAudio.play().catch(() => {}); }
+            } else {
+                btn.innerText = "OFF"; btn.className = "toggle-btn off";
+                if (remoteAudio) { remoteAudio.muted = true; }
+            }
+        }
+
+        function toggleMic() {
+            const btn = document.getElementById('micBtn');
+            isMicOn = !isMicOn;
+            
+            if (localStream && localStream.getAudioTracks().length > 0) {
+                localStream.getAudioTracks()[0].enabled = isMicOn;
+                if (isMicOn) { btn.innerText = "ON"; btn.className = "toggle-btn on"; }
+                else { btn.innerText = "OFF"; btn.className = "toggle-btn off"; }
+            } else {
+                alert("Perangkat mikrofon belum siap.");
+                isMicOn = false;
+            }
+        }
+
+        function openModal(title, desc, buttonsHTML) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalButtons').innerHTML = buttonsHTML;
+            document.getElementById('systemModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('systemModal').style.display = 'none'; }
+        function askToLeave() {
+            openModal("Keluar Game?", "Koneksi ke ruangan catur akan terputus.", 
+                `<button class="btn danger" onclick="confirmLeave()">Ya</button><button class="btn secondary" onclick="closeModal()">Batal</button>`);
+        }
+        function confirmLeave() { window.location.reload(); }
+
+        // FUNGSI MENCARI KOORDINAT RAJA YANG SEDANG TERANCAM SKAK
+        function getKingSquare(color) {
+            if (!chess) return null;
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let r = 0; r < 8; r++) {
+                for (let f = 0; f < 8; f++) {
+                    const sq = files[f] + (r + 1);
+                    const piece = chess.get(sq);
+                    if (piece && piece.type === 'k' && piece.color === color) {
+                        return sq;
+                    }
+                }
+            }
+            return null;
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('chessboard');
+            if (!boardElement) return;
+            boardElement.innerHTML = '';
+
+            let turn = 'w';
+            if (chess) turn = chess.turn();
+
+            if (myColor) {
+                if (turn === myColor) {
+                    document.getElementById('myCard').classList.add('active');
+                    document.getElementById('oppCard').classList.remove('active');
+                } else {
+                    document.getElementById('oppCard').classList.add('active');
+                    document.getElementById('myCard').classList.remove('active');
+                }
+            }
+
+            // Cek status skak aktif
+            let isCheck = chess ? chess.in_check() : false;
+            let checkTargetSquare = isCheck ? getKingSquare(turn) : null;
+
+            const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+            for (let i = 0; i < 8; i++) {
+                const r = myColor === 'b' ? i : 7 - i; 
+                for (let j = 0; j < 8; j++) {
+                    const f = myColor === 'b' ? 7 - j : j;
+                    const squareName = files[f] + (r + 1);
+
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((i + j) % 2 === 0 ? 'white-sq' : 'black-sq');
+                    square.dataset.square = squareName;
+
+                    if (selectedSquare === squareName) square.classList.add('selected');
+                    if (possibleMoves.includes(squareName)) {
+                        square.classList.add('highlight');
+                        if (chess && chess.get(squareName)) square.classList.add('has-piece');
+                    }
+
+                    // Tambahkan kelas indikator visual jika kotak merupakan Raja yang kena skak
+                    if (squareName === checkTargetSquare) {
+                        square.classList.add('in-check');
+                    }
+
+                    if (chess) {
+                        const piece = chess.get(squareName);
+                        if (piece) {
+                            const img = document.createElement('img');
+                            img.classList.add('piece');
+                            img.src = `https://upload.wikimedia.org/wikipedia/commons/${getPieceImageName(piece.color, piece.type)}`;
+                            square.appendChild(img);
+                        }
+                    }
+                    square.onclick = () => handleSquareClick(squareName);
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        function getPieceImageName(color, type) {
+            const key = color + type;
+            const map = {
+                'wp': '4/45/Chess_plt45.svg', 'wn': '7/70/Chess_nlt45.svg', 'wb': 'b/b1/Chess_blt45.svg', 'wr': '7/72/Chess_rlt45.svg', 'wq': '1/15/Chess_qlt45.svg', 'wk': '4/42/Chess_klt45.svg',
+                'bp': 'c/c7/Chess_pdt45.svg', 'bn': 'e/ef/Chess_ndt45.svg', 'bb': '9/98/Chess_bdt45.svg', 'br': 'f/ff/Chess_rdt45.svg', 'bq': '4/47/Chess_qdt45.svg', 'bk': 'f/f0/Chess_kdt45.svg'
+            };
+            return map[key] || '';
+        }
+
+        function checkDeadPieces() {
+            if (!chess) return;
+
+            let activePieces = { w: [], b: [] };
+            chess.board().forEach(row => {
+                row.forEach(square => {
+                    if (square && square.type !== 'k') {
+                        activePieces[square.color].push(square.type);
+                    }
+                });
+            });
+
+            let deadWhite = [...INITIAL_PIECES.w];
+            activePieces.w.forEach(type => {
+                let idx = deadWhite.indexOf(type);
+                if (idx > -1) deadWhite.splice(idx, 1);
+            });
+
+            let deadBlack = [...INITIAL_PIECES.b];
+            activePieces.b.forEach(type => {
+                let idx = deadBlack.indexOf(type);
+                if (idx > -1) deadBlack.splice(idx, 1);
+            });
+
+            const order = ['p', 'n', 'b', 'r', 'q'];
+            deadWhite.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+            deadBlack.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+
+            let whiteLossScore = deadWhite.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
+            let blackLossScore = deadBlack.reduce((sum, p) => sum + PIECE_VALUES[p], 0);
+
+            let whiteAdvantage = blackLossScore - whiteLossScore;
+            let blackAdvantage = whiteLossScore - blackLossScore;
+
+            renderDeadDOM('captured-white-box', 'w', deadWhite, blackAdvantage);
+            renderDeadDOM('captured-black-box', 'b', deadBlack, whiteAdvantage);
+        }
+
+        function renderDeadDOM(boxId, color, deadArray, advantage) {
+            const container = document.getElementById(boxId);
+            if(!container) return;
+            container.innerHTML = '';
+
+            deadArray.forEach(type => {
+                const img = document.createElement('img');
+                img.className = 'dead-piece';
+                img.src = `https://upload.wikimedia.org/wikipedia/commons/${getPieceImageName(color, type)}`;
+                container.appendChild(img);
+            });
+
+            if (advantage > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'score-badge';
+                badge.innerText = `+${advantage}`;
+                container.appendChild(badge);
+            }
+        }
+
+        // FUNGSI UTAMA UNTUK CEK KONDISI AKHIR PERMAINAN (MENANG / SKAKMAT / REMIS)
+        function checkGameStatus() {
+            if (!chess) return;
+
+            if (chess.game_over()) {
+                let title = "PERMAINAN SELESAI";
+                let description = "";
+
+                if (chess.in_checkmate()) {
+                    const loserColor = chess.turn();
+                    if (loserColor === myColor) {
+                        title = "🏆 KAMU KALAH!";
+                        description = "Raja Anda terkena Skakmat. Lawan memenangkan pertandingan.";
+                    } else {
+                        title = "🏆 KAMU MENANG!";
+                        description = "Selamat! Anda berhasil melakukan Skakmat kepada Raja lawan.";
+                    }
+                } else if (chess.in_draw() || chess.in_stalemate() || chess.in_threefold_repetition()) {
+                    title = "🤝 HASIL REMIS (DRAW)";
+                    description = "Pertandingan berakhir imbang akibat Remis, Stalemate, atau Pengulangan Tiga Kali Lipat.";
+                }
+
+                openModal(title, description, `<button class="btn" onclick="closeModal()">Lihat Papan</button><button class="btn secondary" onclick="confirmLeave()">Keluar Kamar</button>`);
+                appendMessage({ message: `🏁 Game Selesai: ${title}. ${description}` }, 'system');
+            }
+        }
+
+        function handleSquareClick(squareName) {
+            if (!chess || chess.turn() !== myColor || chess.game_over() || !gameStarted) return; 
+
+            if (possibleMoves.includes(squareName)) {
+                const moveData = { from: selectedSquare, to: squareName, promotion: 'q' };
+                const targetPiece = chess.get(squareName);
+                const move = chess.move(moveData);
+                
+                if (move) {
+                    socket.emit('makeMove', { room: currentRoom, move: moveData, san: move.san, fen: chess.fen() });
+                    playGameSound(!!targetPiece);
+                    selectedSquare = null; possibleMoves = [];
+                    renderBoard();
+                    checkDeadPieces(); 
+                    checkGameStatus(); // Periksa status kemenangan setelah melangkah
+                }
+            } else {
+                const piece = chess.get(squareName);
+                if (piece && piece.color === myColor) {
+                    selectedSquare = squareName;
+                    const moves = chess.moves({ square: squareName, verbose: true });
+                    possibleMoves = moves.map(m => m.to);
+                } else {
+                    selectedSquare = null; possibleMoves = [];
+                }
                 renderBoard();
             }
+        }
+
+        function playGameSound(isCapture) {
+            try {
+                if (isCapture) { soundCapture.currentTime = 0; soundCapture.play().catch(()=>{}); }
+                else { soundMove.currentTime = 0; soundMove.play().catch(()=>{}); }
+            } catch(e) {}
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('btn-input');
+            const message = input.value.trim();
+            if (!message) return;
+            socket.emit('chatMessage', { room: currentRoom, username: myUsername, message: message });
+            appendMessage({ username: myUsername, message: message }, 'me');
+            input.value = '';
+        }
+
+        function appendMessage(data, type) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            const div = document.createElement('div');
+            div.classList.add('msg', type);
+            if (type === 'system') div.innerText = data.message;
+            else div.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        socket.on('initRole', (role) => {
+            myColor = role; 
+            appendMessage({ message: `Anda masuk sebagai tim ${role === 'w' ? 'PUTIH' : 'HITAM'}.` }, 'system');
+            renderBoard();
+            checkDeadPieces();
         });
 
-        socket.on('chatMessage', (data) => {
-            if (data.username !== myUsername) {
-                appendMessage(data, 'opp');
+        socket.on('onlineCountUpdate', (count) => {
+            const el = document.getElementById('onlineCount');
+            if(el) el.innerText = count;
+        });
+
+        socket.on('updatePlayers', async (players) => {
+            const opponent = players.find(p => p.username !== myUsername);
+            if (opponent) {
+                document.getElementById('oppNameDisplay').innerText = `👤 ${opponent.username} (${opponent.color === 'w' ? 'Putih' : 'Hitam'})`;
+                
+                if (!gameStarted && players.length === 2) {
+                    gameStarted = true;
+                    document.getElementById('waitingScreen').style.display = 'none';
+                    document.getElementById('gameScreen').style.display = 'flex';
+                    
+                    soundStart.currentTime = 0; soundStart.play().catch(()=>{});
+                    
+                    await initPeerConnection(); 
+                    setTimeout(() => { socket.emit('voice-ready', currentRoom); }, 1000);
+
+                    appendMessage({ message: "⚔️ Pertandingan dimulai! Saluran audio siap digunakan bersama." }, 'system');
+                }
             }
         });
 
-        socket.on('playerLeft', () => {
-            appendMessage({ message: '⚠️ Lawan meninggalkan permainan.' }, 'system');
-            openModal("Lawan Keluar", "Pemain lawan telah keluar dari room.", `<button class="btn" onclick="confirmLeave()">Kembali ke Lobby</button>`);
+        socket.on('moveMade', (data) => {
+            if (chess) {
+                const currentPieceAtTarget = chess.get(data.move.to);
+                chess.load(data.fen);
+                playGameSound(!!currentPieceAtTarget);
+                renderBoard();
+                checkDeadPieces(); 
+                checkGameStatus(); // Periksa status kemenangan setelah menerima langkah lawan
+            }
+        });
+
+        socket.on('chatMessage', (data) => { if (data.username !== myUsername) appendMessage(data, 'opp'); });
+        socket.on('systemMessage', (message) => { appendMessage({ message: message }, 'system'); });
+
+        socket.on('voice-ready', async () => {
+            await initPeerConnection();
+        });
+
+        socket.on('voice-offer', async (data) => {
+            await initPeerConnection();
+            try {
+                const readyState = peerConnection.signalingState;
+                const collision = (isMakingOffer || readyState !== "stable");
+                
+                if (collision && !isPolite()) return;
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('webrtc-answer', { room: currentRoom, answer: answer });
+            } catch(e) { console.error(e); }
+        });
+
+        socket.on('voice-answer', async (data) => {
+            if (peerConnection) {
+                try { 
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer)); 
+                } catch(e) { console.error(e); }
+            }
+        });
+
+        socket.on('webrtc-candidate', async (data) => {
+            if (peerConnection) {
+                try { 
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); 
+                } catch(e) {}
+            }
+        });
+
+        socket.on('voice-disconnect', () => {
+            if (peerConnection) { peerConnection.close(); peerConnection = null; }
         });
     </script>
 </body>
