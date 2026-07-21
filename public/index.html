@@ -69,25 +69,28 @@
         }
 
         /* --- STYLES LOGO CUSTOM (MSA.jpeg) --- */
-        /* Styling Logo Bersih Presisi (Sesuai Desain Target) */
-        .custom-brand-logo {
-         width: 65px;
-         height: 65px;
-         object-fit: contain;   /* Menjaga bentuk logo tetap presisi tanpa terpotong */
-         display: block;
-         margin: 0 auto 12px auto;
-         border: none;          /* Menghilangkan garis tepi */
-         box-shadow: none;      /* Menghilangkan bayangan tebal */
-         background: transparent;
-         }
+       /* Styling Logo Persis Sesuai Gambar Target */
+    .custom-brand-logo {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 50%; /* Membuat gambar terpotong lingkaran sempurna */
+        display: block;
+        margin: 0 auto 12px auto;
+    
+        /* Bingkai Lingkaran Putih Modern */
+        border: 3px solid #ffffff; 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        background-color: transparent;
+       }
 
-       /* Penyesuaian khusus jika logo tampil di sidebar/panel */
-        .sidebar-panel .custom-brand-logo,
-        .game-sidebar .custom-brand-logo {
-         width: 60px;
-         height: 60px;
-         margin-bottom: 10px;
-         }
+      /* Penyesuaian Ukuran di Sidebar */
+       .sidebar-panel .custom-brand-logo,
+       .game-sidebar .custom-brand-logo {
+       width: 60px;
+       height: 60px;
+       margin-bottom: 8px;
+       }
 
         /* --- STYLES UMUM BUTTON & INPUT --- */
         .btn {
