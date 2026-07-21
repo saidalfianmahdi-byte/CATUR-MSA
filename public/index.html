@@ -246,13 +246,21 @@
         
         const isPolite = () => myColor === 'b'; 
 
-        const rtcConfig = { 
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-        };
+       const rtcConfig = { 
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        {
+            urls: 'turn:catur-msa.metered.live:80', 
+            username: 'catur-msa.metered.live',
+            credential: 'fNAqN-m1TytB4lawnr1pYF0nN50BGYOBJPdJ5XKqg0tXZQdJ'
+        },
+        {
+            urls: 'turn:catur-msa.metered.live:443?transport=tcp',
+            username: 'catur-msa.metered.live',
+            credential: 'fNAqN-m1TytB4lawnr1pYF0nN50BGYOBJPdJ5XKqg0tXZQdJ'
+        }
+    ]
+};
 
         const soundMove = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Move.ogg');
         const soundCapture = new Audio('https://raw.githubusercontent.com/ornicar/lila/master/public/sound/standard/Capture.ogg');
